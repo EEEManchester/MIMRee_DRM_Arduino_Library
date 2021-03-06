@@ -5,6 +5,8 @@
 #define __builtin_va_end(v)
 
 #define LHM_DEBUG_ON 1
+#define DEBUG_SERIAL_CLASS SERIAL_CLASS
+#define COM_SERIAL_CLASS SERIAL2_CLASS
 
 #include <Arduino.h>
 #include <USBSerial.h>
@@ -12,41 +14,39 @@
 // #include <stdio.h>
 // #include <stdarg.h>
 
-enum class HingeCommand {
-    POWER_OFF = 14,
-    TAKE_OFF = 29,
-    LANDING = 43,
-    SWING_REDUCTION = 57
-};
+enum class CommandType {
+    ERROR = 0,
 
-enum class HookCommand {
-    POWER_OFF = 71,
-    CLOSE = 86,
-    OPEN = 100
+    HINGE_POWER_OFF = 1,
+    HINGE_TAKE_OFF = 2,
+    HINGE_LANDING = 3,
+    HINGE_SWING_REDUCTION = 4,
+    
+    HOOK_POWER_OFF = 6,
+    HOOK_CLOSE = 7,
+    HOOK_OPEN = 8
 };
 
 enum class ExecutionResult {
-    Failed = 33,
-    Successful = 66
+    Failed = 0,
+    Successful = 1
 };
 
 class LHMMessage
 {
     public:
-    LHMMessage(USBSerial &debugSerial);
-    HingeCommand getCurrentHingeCommand();
-    HookCommand getCurrentHookCommand();
+    LHMMessage(DEBUG_SERIAL_CLASS &debugSerial, COM_SERIAL_CLASS &comSerial);
+    int readCommandIn();
+    void sendCommandFeedback(CommandType cmd, bool isSuccessful);
+    void sendCommandFeedback(int cmd, bool isSuccessful);
     void sendDebugMessage(char *fmt, ...);
-    int sendCommandFeedback(HingeCommand cmd, bool isSuccessful, char message[] = NULL);
-    int sendCommandFeedback(HookCommand cmd, bool isSuccessful, char message[] = NULL);
-    int sendCommandFeedback(int cmd, bool isSuccessful, char message[] = NULL);
 
     private:
-    USBSerial &debugSerial;
-    static bool cmdEqualTo(float currentCmd, HingeCommand compareToCmd);
-    static bool cmdEqualTo(float currentCmd, HookCommand compareToCmd);
-    static void setStatusLEDs(HingeCommand cmd);
-    static void setStatusLEDs(HookCommand cmd);
+    DEBUG_SERIAL_CLASS &debugSerial;
+    COM_SERIAL_CLASS &comSerial;
+    String getSerialMessage();
+    int parseSerialMessage(String message);
+    static bool cmdEqualTo(int currentCmd, CommandType compareToCmd);
 };
 
 #endif

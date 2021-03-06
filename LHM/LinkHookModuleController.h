@@ -48,7 +48,7 @@ enum class LimitSwitchStatus
 class LHMController
 {
 public:
-    LHMController(HardwareSerial &servoSerial, USBSerial &debugSerial);
+    LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial);
     void initiateDxl();
     HookStatus getHookStatus();
     HingeStatus getHingeStatus();
@@ -67,12 +67,12 @@ public:
     DXLMotor hookMotor;
     DXLMotor hingeMotorX;
     DXLMotor hingeMotorY;
+    LHMMessage lhmMessage;
 
 private:
     Dynamixel2Arduino dxl;
     HookStatus hookMotionStatus;
     HingeStatus hingeStatus;
-    LHMMessage lhmMessage;
     LimitSwitchStatus getLimitSwitchStatus(int on_pin, int off_pin);
     OnOffStatus getPESensorStatus();
     int digitalReadExt(int pin);

@@ -1,151 +1,62 @@
 #include "LinkHookModuleMessage.h"
 
-
-LHMMessage::LHMMessage(USBSerial &serial) : debugSerial(serial)
+LHMMessage::LHMMessage(DEBUG_SERIAL_CLASS &serial, COM_SERIAL_CLASS &comSerial) : debugSerial(serial), comSerial(comSerial)
 {
 }
 
-HingeCommand LHMMessage::getCurrentHingeCommand()
+int LHMMessage::readCommandIn()
 {
-    float cmd = analogRead(PIN_CMD_IN) * 1.0 / PWM_MAX_PIN_CMD;
-    if (LHMMessage::cmdEqualTo(cmd, HingeCommand::POWER_OFF))
-    {
-        return HingeCommand::POWER_OFF;
-    }
-    if (LHMMessage::cmdEqualTo(cmd, HingeCommand::TAKE_OFF))
-    {
-        return HingeCommand::TAKE_OFF;
-    }
-    if (LHMMessage::cmdEqualTo(cmd, HingeCommand::LANDING))
-    {
-        return HingeCommand::LANDING;
-    }
-    if (LHMMessage::cmdEqualTo(cmd, HingeCommand::SWING_REDUCTION))
-    {
-        return HingeCommand::SWING_REDUCTION;
-    }
-
-    int btn1 = digitalRead(PIN_BUTTON_1);
-    int btn2 = digitalRead(PIN_BUTTON_2);
-    if (btn1 == HIGH && btn2 == LOW)
-    {
-        return HingeCommand::TAKE_OFF;
-    }
-    if (btn1 == LOW && btn2 == HIGH)
-    {
-        return HingeCommand::LANDING;
-    }
-    if (btn1 == HIGH && btn2 == HIGH)
-    {
-        return HingeCommand::SWING_REDUCTION;
-    }
-    if (btn1 == LOW && btn2 == LOW)
-    {
-        return HingeCommand::POWER_OFF;
-    }
+    return parseSerialMessage(getSerialMessage());
 }
 
-HookCommand LHMMessage::getCurrentHookCommand()
+String LHMMessage::getSerialMessage()
 {
-    float cmd = analogRead(PIN_CMD_IN) * 1.0 / PWM_MAX_PIN_CMD;
-    if (LHMMessage::cmdEqualTo(cmd, HookCommand::POWER_OFF))
+    if (comSerial.available() < 1)
     {
-        return HookCommand::POWER_OFF;
+        return "";
     }
-    if (LHMMessage::cmdEqualTo(cmd, HookCommand::CLOSE))
+    String val = comSerial.readString();
+    sendDebugMessage("LHMMessage::getSerialMessage::Incoming message received: %s", val);
+    return val;
+}
+
+int LHMMessage::parseSerialMessage(String message)
+{
+    if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)))
     {
-        return HookCommand::CLOSE;
+        return (int)CommandType::ERROR;
     }
-    if (LHMMessage::cmdEqualTo(cmd, HookCommand::OPEN))
+    if (message[1] == SERIAL_MESSAGE_TYPE_INDICATOR_CMD)
     {
-        return HookCommand::OPEN;
+        String command = message.substring(2, message.length() - 2);
+        int val = command.toInt();
+        sendDebugMessage("LHMMessage::parseSerialMessage::(Extracted) %s -> (Converted) %i", command, val);
     }
+    return (int)CommandType::ERROR;
 }
 
 void LHMMessage::sendDebugMessage(char *fmt, ...)
 {
-    #if LHM_DEBUG_ON
+#if LHM_DEBUG_ON
     va_list va;
     va_start(va, fmt);
-    LHMMessage::debugSerial.printf(fmt, va)
+    char message[255];
+    vsnprintf(message, sizeof(message), fmt, va);
+    LHMMessage::debugSerial.println(message);
     va_end(va);
-    #endif
+#endif
 }
 
-bool LHMMessage::cmdEqualTo(float cmd, HingeCommand hCmd)
+void LHMMessage::sendCommandFeedback(CommandType cmd, bool isSuccessful)
 {
-    return abs(cmd - (int)hCmd / 100.0) < 0.05;
+    sendCommandFeedback((int)cmd, isSuccessful);
 }
 
-int LHMMessage::sendCommandFeedback(HingeCommand cmd, bool isSuccessful, char message[])
+void LHMMessage::sendCommandFeedback(int cmd, bool isSuccessful)
 {
-    int pwm = sendCommandFeedback((int)cmd, isSuccessful, message);
-    if (isSuccessful)
-    {
-        setStatusLEDs(cmd);
-    }
-    return pwm;
-}
-
-int LHMMessage::sendCommandFeedback(HookCommand cmd, bool isSuccessful, char message[])
-{
-    int pwm = sendCommandFeedback((int)cmd, isSuccessful, message);
-    if (isSuccessful)
-    {
-        setStatusLEDs(cmd);
-    }
-    return pwm;
-}
-
-int LHMMessage::sendCommandFeedback(int cmd, bool isSuccessful, char message[])
-{
-    int pwm_name = cmd / 100.0 * PWM_MAX_PIN_FBK;
-    int pwm_result = isSuccessful ? 0.66 * PWM_MAX_PIN_FBK : 0.33 * PWM_MAX_PIN_FBK;
-    analogWrite(PIN_CMD_FBK_NAME, pwm_name);
-    analogWrite(PIN_CMD_FBK_RESULT, pwm_result);
-    if (message != NULL)
-    {
-        sendDebugMessage(message);
-    }
-    else
-    {
-        sendDebugMessage("LHMMessage::sendCommandFeedback::Pin[%i] = %i | Pin[%i] = %i", PIN_CMD_FBK_NAME, pwm_name, PIN_CMD_FBK_RESULT, pwm_result);
-    }
-    return pwm_name;
-}
-
-void LHMMessage::setStatusLEDs(HingeCommand cmd)
-{
-    int led1Val, led2Val = LOW;
-    switch (cmd)
-    {
-    case HingeCommand::POWER_OFF:
-        break;
-    case HingeCommand::TAKE_OFF:
-        led1Val = HIGH;
-        break;
-    case HingeCommand::LANDING:
-        led2Val = HIGH;
-        break;
-    case HingeCommand::SWING_REDUCTION:
-        led1Val = HIGH;
-        led2Val = HIGH;
-        break;
-    }
-    digitalWrite(PIN_LED_1, led1Val);
-    digitalWrite(PIN_LED_2, led2Val);
-}
-
-void LHMMessage::setStatusLEDs(HookCommand cmd)
-{
-    switch (cmd)
-    {
-    case HookCommand::POWER_OFF:
-        digitalWrite(PIN_LED_0, LOW);
-        break;
-    case HookCommand::CLOSE:
-    case HookCommand::OPEN:
-        digitalWrite(PIN_LED_0, HIGH);
-        break;
-    }
+    int result = isSuccessful ? 1 : 0;
+    char message[8];
+    snprintf(message, sizeof(message), "$%c%i,%i$", SERIAL_MESSAGE_TYPE_INDICATOR_FBK, cmd, result);
+    sendDebugMessage("LHMMessage::sendCommandFeedback::%s", message);
+    comSerial.println(message);
 }

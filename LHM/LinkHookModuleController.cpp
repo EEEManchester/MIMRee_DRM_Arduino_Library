@@ -1,11 +1,11 @@
 #include "LinkHookModuleController.h"
 
-LHMController::LHMController(HardwareSerial &servoSerial, USBSerial &debugSerial)
+LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial)
     : dxl(Dynamixel2Arduino(servoSerial, PIN_DXL_DIR)),
       hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK)),
       hingeMotorX(DXLMotor(dxl, MOTOR_ID_HINGE_X)),
       hingeMotorY(DXLMotor(dxl, MOTOR_ID_HINGE_Y)),
-      lhmMessage(debugSerial)
+      lhmMessage(debugSerial, comSerial)
 {
 }
 
@@ -13,17 +13,10 @@ void LHMController::initiateDxl()
 {
     LHMController::dxl.begin(DXL_BAUD_RATE);
     LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
-    LHMController::hingeMotorX.setLED(true);
-    LHMController::hingeMotorY.setLED(true);
-    LHMController::hookMotor.setLED(true);
-    delay(3000);
-    LHMController::hingeMotorX.setLED(false);
-    LHMController::hingeMotorY.setLED(false);
-    LHMController::hookMotor.setLED(false);
 
     LHMController::hookMotor.setOperatingMode(OP_VELOCITY);
-    LHMController::hingeMotorX.setTorqueOn();
-    LHMController::hingeMotorY.setTorqueOn();
+    LHMController::hingeMotorX.setTorqueOff();
+    LHMController::hingeMotorY.setTorqueOff();
 }
 
 HingeStatus LHMController::getHingeStatus()
@@ -103,7 +96,7 @@ bool LHMController::setSwingReductionMode()
     result = result && LHMController::hingeMotorX.setGoalCurrent(0);
     result = LHMController::hingeMotorY.setOperatingMode(OP_CURRENT) && result;
     result = result && LHMController::hingeMotorY.setGoalCurrent(0);
-    LHMController::lhmMessage.sendCommandFeedback(HingeCommand::SWING_REDUCTION, result);
+    LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_SWING_REDUCTION, result);
     return result;
 }
 
@@ -111,7 +104,9 @@ bool LHMController::setLandingPosition()
 {
     bool result = LHMController::hingeMotorX.setOperatingMode(OP_POSITION);
     result = result && LHMController::hingeMotorX.setGoalPosition(HINGE_X_VAL_LANDING_POISITION);
-    LHMController::lhmMessage.sendCommandFeedback(HingeCommand::LANDING, result);
+    result = result && LHMController::hingeMotorY.setOperatingMode(OP_POSITION);
+    result = result && LHMController::hingeMotorY.setGoalPosition(HINGE_Y_VAL_LANDING_POISITION);
+    LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_LANDING, result);
     return result;
 }
 
@@ -125,7 +120,7 @@ bool LHMController::setTakeoffMode()
     bool result;
     result = LHMController::hingeMotorX.setTorqueOff();
     result = LHMController::hingeMotorY.setTorqueOff() && result;
-    LHMController::lhmMessage.sendCommandFeedback(HingeCommand::TAKE_OFF, result);
+    LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_TAKE_OFF, result);
     return result;
 }
 
@@ -133,7 +128,7 @@ bool LHMController::stopHingeMotor()
 {
     bool result = LHMController::hingeMotorX.setTorqueOff();
     result = LHMController::hingeMotorY.setTorqueOff() && result;
-    LHMController::lhmMessage.sendCommandFeedback(HingeCommand::POWER_OFF, result);
+    LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_POWER_OFF, result);
     return result;
 }
 
