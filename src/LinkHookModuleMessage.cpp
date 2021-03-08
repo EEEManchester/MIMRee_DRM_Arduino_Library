@@ -1,12 +1,15 @@
 #include "LinkHookModuleMessage.h"
 
-LHMMessage::LHMMessage(DEBUG_SERIAL_CLASS &serial, COM_SERIAL_CLASS &comSerial) : debugSerial(serial), comSerial(comSerial)
+LHMMessage::LHMMessage(COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial) : comSerial(comSerial), debugSerial(debugSerial)
 {
 }
 
 int LHMMessage::readCommandIn()
 {
-    return parseSerialMessage(getSerialMessage());
+    String message = getSerialMessage();
+    if (message == "")
+        return (int)CommandType::ERROR;
+    return parseSerialMessage(message);
 }
 
 String LHMMessage::getSerialMessage()
@@ -16,35 +19,26 @@ String LHMMessage::getSerialMessage()
         return "";
     }
     String val = comSerial.readString();
-    sendDebugMessage("LHMMessage::getSerialMessage::Incoming message received: %s", val);
+    debugSerial.printf("LHMMessage::getSerialMessage::Incoming message received: %s\n", val.c_str());
     return val;
 }
 
 int LHMMessage::parseSerialMessage(String message)
 {
-    if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)))
+    if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)+"\n"))
     {
+        debugSerial.printf("LHMMessage::parseSerialMessage::Wrong message format: %s\n", message.c_str());
         return (int)CommandType::ERROR;
     }
     if (message[1] == SERIAL_MESSAGE_TYPE_INDICATOR_CMD)
     {
         String command = message.substring(2, message.length() - 2);
         int val = command.toInt();
-        sendDebugMessage("LHMMessage::parseSerialMessage::(Extracted) %s -> (Converted) %i", command, val);
+        debugSerial.printf("LHMMessage::parseSerialMessage::(Raw) %s -> (Extracted) %s -> (Converted) %D\n", message.c_str(), command.c_str(), val);
+        return val;
     }
+    debugSerial.printf("LHMMessage::parseSerialMessage::Code not recognised: %s\n", message.c_str());
     return (int)CommandType::ERROR;
-}
-
-void LHMMessage::sendDebugMessage(char *fmt, ...)
-{
-#if LHM_DEBUG_ON
-    va_list va;
-    va_start(va, fmt);
-    char message[255];
-    vsnprintf(message, sizeof(message), fmt, va);
-    LHMMessage::debugSerial.println(message);
-    va_end(va);
-#endif
 }
 
 void LHMMessage::sendCommandFeedback(CommandType cmd, bool isSuccessful)
@@ -55,8 +49,8 @@ void LHMMessage::sendCommandFeedback(CommandType cmd, bool isSuccessful)
 void LHMMessage::sendCommandFeedback(int cmd, bool isSuccessful)
 {
     int result = isSuccessful ? 1 : 0;
-    char message[8];
+    char message[32];
     snprintf(message, sizeof(message), "$%c%i,%i$", SERIAL_MESSAGE_TYPE_INDICATOR_FBK, cmd, result);
-    sendDebugMessage("LHMMessage::sendCommandFeedback::%s", message);
     comSerial.println(message);
+    debugSerial.printf("LHMMessage::sendCommandFeedback::%s\n", message);
 }

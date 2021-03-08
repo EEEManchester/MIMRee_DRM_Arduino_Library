@@ -1,34 +1,44 @@
 #include "DxlMotor.h"
 using namespace ControlTableItem;
 
-DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, int motorId)
-    : dxl(dxl), id(motorId)
+DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, int motorId, LHMMessage &lhmMessage)
+    : dxl(dxl), id(motorId), lhmMessage(lhmMessage)
 {
 }
 
 bool DXLMotor::isOnline()
 {
-    return DXLMotor::dxl.ping(DXLMotor::id);
+    bool result = DXLMotor::dxl.ping(DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isOnline:: id[%d] = %d\n", DXLMotor::id, result);
+    return result;
 }
 
 bool DXLMotor::isTorqueOn()
 {
-    return DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
+    bool result = DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    return result;
 }
 
 float DXLMotor::getCurrentPosition()
 {
-    return DXLMotor::dxl.getPresentPosition(DXLMotor::id);
+    float result = DXLMotor::dxl.getPresentPosition(DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::getCurrentPosition:: id[%d] = %f\n", DXLMotor::id, result);
+    return result;
 }
 
 float DXLMotor::getCurrentVelocity()
 {
-    return DXLMotor::dxl.getPresentVelocity(DXLMotor::id);
+    float result = DXLMotor::dxl.getPresentVelocity(DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", DXLMotor::id, result);
+    return result;
 }
 
 bool DXLMotor::isMoving()
 {
-    return DXLMotor::dxl.readControlTableItem(122, DXLMotor::id) == 1;
+    int32_t result = DXLMotor::dxl.readControlTableItem(122, DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    return result == 1;
 }
 
 bool DXLMotor::isAtGoalPosition()
@@ -38,11 +48,12 @@ bool DXLMotor::isAtGoalPosition()
 
 bool DXLMotor::isAtPosition(float position)
 {
-    return position - getCurrentPosition() < 2;
+    return position - getCurrentPosition() < POSITION_TOLERANCE;
 }
 
 bool DXLMotor::setOperatingMode(OperatingMode op)
 {
+    // For safety concerns, always torque off before setting operating mode.
     if (isTorqueOn())
     {
         setTorqueOff();
@@ -58,6 +69,7 @@ bool DXLMotor::setOperatingMode(OperatingMode op)
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setOperatingMode:: id[%d] -> [%d] = %d\n", DXLMotor::id, op, result);
     return result;
 }
 
@@ -73,6 +85,7 @@ bool DXLMotor::setTorqueOff()
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setTorqueOff:: id[%d] = %d\n", DXLMotor::id, result);
     return result;
 }
 
@@ -88,13 +101,27 @@ bool DXLMotor::setTorqueOn()
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    return result;
+}
+
+bool DXLMotor::setVelocityProfile(int val)
+{
+    bool result = DXLMotor::dxl.writeControlTableItem(PROFILE_VELOCITY, DXLMotor::id, val);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setVelocityProfile:: id[%d] = %d\n", DXLMotor::id, result);
+    return result;
+}
+
+bool DXLMotor::setAccelerationProfile(int val)
+{
+    bool result = DXLMotor::dxl.writeControlTableItem(PROFILE_ACCELERATION, DXLMotor::id, val);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setAccelerationProfile:: id[%d] = %d\n", DXLMotor::id, result);
     return result;
 }
 
 bool DXLMotor::setGoalVelocity(float velocity)
-{
-    bool result = setTorqueOn();
-    result = result && DXLMotor::dxl.setGoalVelocity(DXLMotor::id, velocity);
+{    
+    bool result = DXLMotor::dxl.setGoalVelocity(DXLMotor::id, velocity);
     if (result)
     {
         DXLMotor::goalVelocity = velocity;
@@ -104,13 +131,13 @@ bool DXLMotor::setGoalVelocity(float velocity)
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalVelocity:: id[%d] -> [%f] = %d\n", DXLMotor::id, velocity, result);
     return result;
 }
 
 bool DXLMotor::setGoalCurrent(float current)
 {
-    bool result = setTorqueOn();
-    result = result && DXLMotor::dxl.setGoalCurrent(DXLMotor::id, current);
+    bool result = DXLMotor::dxl.setGoalCurrent(DXLMotor::id, current);
     if (result)
     {
         DXLMotor::goalCurrent = current;
@@ -120,15 +147,13 @@ bool DXLMotor::setGoalCurrent(float current)
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalCurrent:: id[%d] -> [%f] = %d\n", DXLMotor::id, current, result);
     return result;
 }
 
 bool DXLMotor::setGoalPosition(float position)
 {
-    bool result = setTorqueOn();
-    result = result && DXLMotor::dxl.writeControlTableItem(PROFILE_ACCELERATION, DXLMotor::id, PROFILE_ACCELERATION_VAL);
-    result = result && DXLMotor::dxl.writeControlTableItem(PROFILE_VELOCITY, DXLMotor::id, PROFILE_VELOCITY_VAL);
-    result = result && DXLMotor::dxl.setGoalPosition(DXLMotor::id, position);
+    bool result = DXLMotor::dxl.setGoalPosition(DXLMotor::id, position);
     if (result)
     {
         DXLMotor::goalPosition = position;
@@ -138,6 +163,7 @@ bool DXLMotor::setGoalPosition(float position)
     {
         DXLMotor::errorStatus = true;
     }
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalPosition:: id[%d] -> [%f] = %d\n", DXLMotor::id, position, result);
     return result;
 }
 

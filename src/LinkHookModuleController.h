@@ -11,25 +11,25 @@
 enum class HookStatus
 {
     UNKNOWN = 0,
-    OFFLINE = 14,
-    ERROR = 29,
-    FULLY_OPEN = 43,
-    FULLY_CLOSED = 57,
-    LOOSE = 71,
-    CLOSING = 86,
-    OPENNING = 100
+    OFFLINE,
+    ERROR,
+    FULLY_CLOSED = 10,
+    FULLY_OPEN,
+    LOOSE,
+    CLOSING = 20,
+    OPENNING
 };
 
 enum class HingeStatus
 {
     UNKNOWN = 0,
-    OFFLINE = 14,
-    ERROR = 29,
-    TORQUE_OFF = 43,
-    TAKEOFF_MODE  = 57,
-    LANDING_POSITION_IN_TRANSITION = 71,
-    LANDING_POSITION_READY = 86,
-    SWING_REDUCTION= 100
+    OFFLINE,
+    ERROR,
+    TORQUE_OFF = 10,
+    TAKEOFF_MODE  = 20,
+    LANDING_POSITION_IN_TRANSITION = 30,
+    LANDING_POSITION_READY = 31,
+    SWING_REDUCTION= 40
 };
 
 enum class OnOffStatus
@@ -40,9 +40,10 @@ enum class OnOffStatus
 
 enum class LimitSwitchStatus
 {
-    CLOSED,
+    OFFLINE = 0,
+    ERROR,
+    CLOSED = 10,
     OPEN,
-    OFFLINE
 };
 
 class LHMController
