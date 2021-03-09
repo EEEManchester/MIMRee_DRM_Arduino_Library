@@ -6,12 +6,13 @@
 #define SERIAL3_CLASS HardwareSerial
 
 //Pin
-const int PIN_LIMIT_SWITCH_CLOSED_TOP = 6;      //blue
-const int PIN_LIMIT_SWITCH_OPEN_TOP = 7;        //brown
-const int PIN_LIMIT_SWITCH_CLOSED_BOT = 8;      //yellow
-const int PIN_LIMIT_SWITCH_OPEN_BOT = 9;        //purple
-const int PIN_PE_SENSOR = 10;                   //white
-const int PIN_JETTISON_SERVO_PWM = 0;
+const int PIN_LIMIT_SWITCH_CLOSED_TOP = 13;      //blue
+const int PIN_LIMIT_SWITCH_OPEN_TOP = 12;        //brown
+const int PIN_LIMIT_SWITCH_CLOSED_BOT = 11;      //yellow
+const int PIN_LIMIT_SWITCH_OPEN_BOT = 10;        //purple
+const int PIN_PE_SENSOR = 9;                     //white
+const int PIN_JETTISON_SERVO_PWM = 8;
+const int PIN_JETTISON_IN = 7;
 
 //Communication
 const char SERIAL_PREFIX = '$';
@@ -19,22 +20,23 @@ const char SERIAL_MESSAGE_TYPE_INDICATOR_CMD = 'C';
 const char SERIAL_MESSAGE_TYPE_INDICATOR_FBK = 'F';
 const char SERIAL_MESSAGE_TYPE_INDICATOR_STATUS = 'S';
 
-//Dxl motor firmware settings
+//Dxl servo firmware settings
 const int MOTOR_ID_HOOK = 1;
 const int MOTOR_ID_HINGE_Y = 2;
 const int MOTOR_ID_HINGE_X = 3;
 const float DXL_PROTOCOL_VERSION = 2.0;
 const unsigned long DXL_BAUD_RATE = 1000000;
 
-//Dxl motor user configurations
+//Dxl servo user configurations
 const int VELOCITY_HOOK_MOTOR_OPEN = 800;
 const int VELOCITY_HOOK_MOTOR_CLOSE = 1823;
 const int PROFILE_VELOCITY_VAL = 18;
 const int PROFILE_ACCELERATION_VAL = 2;
 const float HINGE_X_VAL_LANDING_POISITION = 3072;
 const float HINGE_Y_VAL_LANDING_POISITION = 2048;
-const float MOVING_THRESHOLD_VELOCITY = 1;
 const float POSITION_TOLERANCE = 13;
+const float MOVING_THRESHOLD_VELOCITY = 1;
+const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
 
 //OpenCM 9.04 + 485 EXP specific
 const int PIN_DXL_DIR = 22;
@@ -45,4 +47,7 @@ const int PIN_LED_3 = 20;
 const int PIN_BUTTON_1 = 16;
 const int PIN_BUTTON_2 = 17;
 
+//Jettison
+const int JETTISON_SERVO_VALUE_CLOSE = 70;
+const int JETTISON_SERVO_VALUE_OPEN = 160;
 #endif

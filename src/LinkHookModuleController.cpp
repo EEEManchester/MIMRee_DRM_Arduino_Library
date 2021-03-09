@@ -7,6 +7,11 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
       hingeMotorX(DXLMotor(dxl, MOTOR_ID_HINGE_X, lhmMessage)),
       hingeMotorY(DXLMotor(dxl, MOTOR_ID_HINGE_Y, lhmMessage))
 {
+    pinMode(PIN_LIMIT_SWITCH_CLOSED_BOT, INPUT_PULLDOWN);
+    pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
+    pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
+    pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
+    jettisonServo.attach(PIN_JETTISON_SERVO_PWM);
 }
 
 void LHMController::initiate()
@@ -15,13 +20,8 @@ void LHMController::initiate()
     LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
 
     LHMController::hookMotor.setOperatingMode(OP_VELOCITY);
-    LHMController::hingeMotorX.setTorqueOff();
-    LHMController::hingeMotorY.setTorqueOff();
-
-    pinMode(PIN_LIMIT_SWITCH_CLOSED_BOT, INPUT_PULLDOWN);
-    pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
-    pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
-    pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
+    stopHookMotor();
+    stopHingeMotor();
 }
 
 HingeStatus LHMController::getHingeStatus()
@@ -150,60 +150,68 @@ bool LHMController::stopHingeMotor()
     return result;
 }
 
-void LHMController::openHook()
+bool LHMController::openHook()
 {
-    if (getHookStatus() == HookStatus::FULLY_OPEN)
+    HookStatus hStatus = getHookStatus();
+    if (hStatus == HookStatus::FULLY_OPEN || hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
     {
         return;
     }
 
     //TODO make this none blocking
-    bool result = LHMController::hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_OPEN);
-    if (!result)
+    bool result = LHMController::hookMotor.setTorqueOn();
+    result = result && LHMController::hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_OPEN);
+    if (result)
     {
-        return;
+        LHMController::hookMotionStatus = HookStatus::OPENNING;
     }
-    LHMController::hookMotionStatus = HookStatus::OPENNING;
-    while (getHookStatus() != HookStatus::FULLY_OPEN)
-    {
-        delay(50);
-    }
-    LHMController::hookMotor.setGoalVelocity(0);
-    delay(100);
-    LHMController::hookMotor.setTorqueOff();
-    LHMController::hookMotionStatus = HookStatus::UNKNOWN;
+    return result;
 }
 
-void LHMController::closeHook()
+bool LHMController::closeHook()
 {
-    if (getHookStatus() == HookStatus::FULLY_CLOSED)
+    HookStatus hStatus = getHookStatus();
+    if (hStatus == HookStatus::FULLY_CLOSED || hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
     {
         return;
     }
 
     //TODO make this none blocking
-    bool result = LHMController::hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_CLOSE);
-    if (!result)
+    bool result = LHMController::hookMotor.setTorqueOn();
+    result = result && LHMController::hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_CLOSE);
+    if (result)
     {
-        return;
+        LHMController::hookMotionStatus = HookStatus::CLOSING;
     }
-    LHMController::hookMotionStatus = HookStatus::CLOSING;
-    while (getHookStatus() != HookStatus::FULLY_CLOSED)
-    {
-        delay(50);
-    }
-    LHMController::hookMotor.setGoalVelocity(0);
-    delay(100);
-    LHMController::hookMotor.setTorqueOff();
-    LHMController::hookMotionStatus = HookStatus::UNKNOWN;
+    return result;
 }
 
-void LHMController::stopHookMotor()
+bool LHMController::stopHookMotor()
 {
-    LHMController::hookMotor.setGoalVelocity(0);
+    bool result = LHMController::hookMotor.setGoalVelocity(0);
     delay(100);
-    LHMController::hookMotor.setTorqueOff();
-    LHMController::hookMotionStatus = HookStatus::UNKNOWN;
+    result = LHMController::hookMotor.setTorqueOff() && result;
+    return result;
+}
+
+bool LHMController::emergencyJettison()
+{
+    for (int i = 0; i < 10; i++)
+    {
+        jettisonServo.write(JETTISON_SERVO_VALUE_OPEN);
+        delay(100);
+    }
+    return true;
+}
+
+bool LHMController::emergencyJettisonLock()
+{
+    for (int i = 0; i < 10; i++)
+    {
+        jettisonServo.write(JETTISON_SERVO_VALUE_CLOSE);
+        delay(100);
+    }
+    return true;
 }
 
 LimitSwitchStatus LHMController::getBotLimitSwitchStatus()

@@ -5,7 +5,7 @@
 #define DEBUG_SERIAL Serial
 
 const int STATUS_REPORT_INTERVAL = 1000;
-const int COMMAND_IN__CHECK_INTERVAL = 0;
+const int COMMAND_IN_CHECK_INTERVAL = 0;
 
 LHMController lhm(DXL_SERIAL, COM_SERIAL, DEBUG_SERIAL);
 
@@ -17,7 +17,8 @@ void setup() {
 
 long prevStatusReportTime = 0;
 long prevCommandInCheckTime = 0;
-
+HingeStatus hgStatus;
+HookStatus hkStatus;
 
 void loop() {
   if ((int)millis() - prevStatusReportTime > STATUS_REPORT_INTERVAL)
@@ -25,17 +26,23 @@ void loop() {
     prevStatusReportTime = millis();
     reportStatus();
   }
-  if ((int)millis() - prevCommandInCheckTime > COMMAND_IN__CHECK_INTERVAL)
+  if ((int)millis() - prevCommandInCheckTime > COMMAND_IN_CHECK_INTERVAL)
   {
     prevCommandInCheckTime = millis();
     checkCommandIn();
   }
+  HookStatus hkMotion = lhm.getHookMotionStatus();
+  if (hkMotion == HookStatus::OPENNING || hkMotion == HookStatus::CLOSING)
+  {
+    if (hkStatus != HookStatus::OPENNING || hkStatus != HookStatus::OPENNING)
+      lhm.stopHookMotor();
+  }
 }
 
-int reportStatus()
+void reportStatus()
 {
-  HingeStatus hgStatus = lhm.getHingeStatus();
-  HookStatus hkStatus = lhm.getHookStatus();
+  hgStatus = lhm.getHingeStatus();
+  hkStatus = lhm.getHookStatus();
   DEBUG_SERIAL.printf("Status: Hinge=%d | Hook=%d\n", (int)hgStatus, (int)hkStatus);
   COM_SERIAL.printf("$S%d,%d$\n", (int)hgStatus, (int)hkStatus);
 }
@@ -47,7 +54,11 @@ void checkCommandIn()
   {
   case (int)CommandType::ERROR:
     break;
-  case (int)CommandType::EMERGENCY_JETTISON:
+  case (int)CommandType::JETTISON:
+    lhm.jettison();
+    break;
+  case (int)CommandType::JETTISON_LOCK:
+    lhm.jettisonLock();
     break;
   case (int)CommandType::RESET_DYNAMIXEL_COM:
     lhm.initiate();

@@ -36,9 +36,31 @@ float DXLMotor::getCurrentVelocity()
 
 bool DXLMotor::isMoving()
 {
-    int32_t result = DXLMotor::dxl.readControlTableItem(122, DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    int32_t result = DXLMotor::dxl.readControlTableItem(MOVING, DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isMoving:: id[%d] = %d\n", DXLMotor::id, result);
     return result == 1;
+    // if (!isTorqueOn())
+    // {
+    //     return false;
+    // }
+    // OperatingMode opMode = getCurrentOperatingMode();
+    // if (opMode == OP_CURRENT)
+    // {
+    //     return true;
+    // }
+    // bool isStationary = getCurrentVelocity() < MOVING_THRESHOLD_VELOCITY;
+    // if (opMode == OP_VELOCITY)
+    // {
+    //     return isStationary;
+    // }
+    // if (opMode == OP_POSITION)
+    // {
+    //     if (!isStationary)
+    //     {
+    //         return true;
+    //     }
+    //     return abs(getCurrentPosition() - getCurrentGoalPosition()) > POSITION_TOLERANCE;
+    // }
 }
 
 bool DXLMotor::isAtGoalPosition()
