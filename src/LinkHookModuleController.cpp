@@ -9,7 +9,7 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
 {
 }
 
-void LHMController::initiateDxl()
+void LHMController::initiate()
 {
     LHMController::dxl.begin(DXL_BAUD_RATE);
     LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);

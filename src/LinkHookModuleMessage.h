@@ -15,8 +15,11 @@
 // #include <stdarg.h>
 
 enum class CommandType {
-    ERROR = 0,
+    ERROR = -1,
 
+    RESET_DYNAMIXEL_COM = 91,
+    EMERGENCY_JETTISON = 99,
+    
     HINGE_POWER_OFF = 1,
     HINGE_TAKE_OFF = 2,
     HINGE_LANDING = 3,

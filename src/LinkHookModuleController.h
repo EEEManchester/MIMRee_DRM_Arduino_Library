@@ -50,7 +50,7 @@ class LHMController
 {
 public:
     LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial);
-    void initiateDxl();
+    void initiate();
     HookStatus getHookStatus();
     HingeStatus getHingeStatus();
     bool isEngaged();
@@ -62,6 +62,7 @@ public:
     void openHook();
     void closeHook();
     void stopHookMotor();
+    bool emergencyJettison();
     LimitSwitchStatus getTopLimitSwitchStatus();
     LimitSwitchStatus getBotLimitSwitchStatus();
 

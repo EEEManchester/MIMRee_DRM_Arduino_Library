@@ -6,11 +6,12 @@
 #define SERIAL3_CLASS HardwareSerial
 
 //Pin
-const int PIN_LIMIT_SWITCH_CLOSED_TOP = 21;      //blue
-const int PIN_LIMIT_SWITCH_OPEN_TOP = 22;        //brown
-const int PIN_LIMIT_SWITCH_CLOSED_BOT = 23;      //yellow
-const int PIN_LIMIT_SWITCH_OPEN_BOT = 24;        //purple
-const int PIN_PE_SENSOR = 20;                    //white
+const int PIN_LIMIT_SWITCH_CLOSED_TOP = 6;      //blue
+const int PIN_LIMIT_SWITCH_OPEN_TOP = 7;        //brown
+const int PIN_LIMIT_SWITCH_CLOSED_BOT = 8;      //yellow
+const int PIN_LIMIT_SWITCH_OPEN_BOT = 9;        //purple
+const int PIN_PE_SENSOR = 10;                   //white
+const int PIN_JETTISON_SERVO_PWM = 0;
 
 //Communication
 const char SERIAL_PREFIX = '$';

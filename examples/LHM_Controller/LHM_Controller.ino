@@ -11,7 +11,7 @@ LHMController lhm(DXL_SERIAL, COM_SERIAL, DEBUG_SERIAL);
 
 void setup() {
   DEBUG_SERIAL.begin(9600);
-  lhm.initiateDxl();
+  lhm.initiate();
   pulseLEDSequantial();
 }
 
@@ -46,6 +46,11 @@ void checkCommandIn()
   switch (cmd)
   {
   case (int)CommandType::ERROR:
+    break;
+  case (int)CommandType::EMERGENCY_JETTISON:
+    break;
+  case (int)CommandType::RESET_DYNAMIXEL_COM:
+    lhm.initiate();
     break;
   case (int)CommandType::HINGE_POWER_OFF:
     lhm.stopHingeMotor();
