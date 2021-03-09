@@ -19,22 +19,26 @@ String LHMMessage::getSerialMessage()
         return "";
     }
     String val = comSerial.readString();
+    if (val.endsWith("\n"))
+    {
+        val = val.substring(0, val.length()-1);
+    }
     debugSerial.printf("LHMMessage::getSerialMessage::Incoming message received: %s\n", val.c_str());
     return val;
 }
 
 int LHMMessage::parseSerialMessage(String message)
 {
-    if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)+"\n"))
+    if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)))
     {
         debugSerial.printf("LHMMessage::parseSerialMessage::Wrong message format: %s\n", message.c_str());
         return (int)CommandType::ERROR;
     }
     if (message[1] == SERIAL_MESSAGE_TYPE_INDICATOR_CMD)
     {
-        String command = message.substring(2, message.length() - 2);
+        String command = message.substring(2, message.length() - 1);
         int val = command.toInt();
-        debugSerial.printf("LHMMessage::parseSerialMessage::(Raw) %s -> (Extracted) %s -> (Converted) %D\n", message.c_str(), command.c_str(), val);
+        debugSerial.printf("LHMMessage::parseSerialMessage::(Raw) %s -> (Extracted) %s -> (Converted) %d\n", message.c_str(), command.c_str(), val);
         return val;
     }
     debugSerial.printf("LHMMessage::parseSerialMessage::Code not recognised: %s\n", message.c_str());
