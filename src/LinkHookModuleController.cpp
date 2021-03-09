@@ -153,11 +153,14 @@ bool LHMController::stopHingeMotor()
 bool LHMController::openHook()
 {
     HookStatus hStatus = getHookStatus();
-    if (hStatus == HookStatus::FULLY_OPEN || hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    if (hStatus == HookStatus::FULLY_OPEN)
     {
-        return;
+        return true;
     }
-
+    if (hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    {
+        return false;
+    }
     //TODO make this none blocking
     bool result = LHMController::hookMotor.setTorqueOn();
     result = result && LHMController::hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_OPEN);
@@ -171,9 +174,13 @@ bool LHMController::openHook()
 bool LHMController::closeHook()
 {
     HookStatus hStatus = getHookStatus();
-    if (hStatus == HookStatus::FULLY_CLOSED || hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    if (hStatus == HookStatus::FULLY_CLOSED)
     {
-        return;
+        return true;
+    }
+    if (hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    {
+        return false;
     }
 
     //TODO make this none blocking
@@ -194,7 +201,7 @@ bool LHMController::stopHookMotor()
     return result;
 }
 
-bool LHMController::emergencyJettison()
+bool LHMController::jettison()
 {
     for (int i = 0; i < 10; i++)
     {
@@ -204,7 +211,7 @@ bool LHMController::emergencyJettison()
     return true;
 }
 
-bool LHMController::emergencyJettisonLock()
+bool LHMController::jettisonLock()
 {
     for (int i = 0; i < 10; i++)
     {
