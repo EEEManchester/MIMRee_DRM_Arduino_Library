@@ -58,8 +58,8 @@ void checkCommandIn()
   case (int)CommandType::JETTISON:
     lhm.jettison();
     break;
-  case (int)CommandType::JETTISON_LOCK:
-    lhm.jettisonLock();
+  case (int)CommandType::LOCK_LHM:
+    lhm.lockLHM();
     break;
   case (int)CommandType::RESET_DYNAMIXEL_COM:
     lhm.initiate();

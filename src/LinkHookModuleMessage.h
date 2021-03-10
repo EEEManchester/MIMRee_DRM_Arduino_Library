@@ -19,7 +19,7 @@ enum class CommandType {
 
     RESET_DYNAMIXEL_COM = 91,
     JETTISON = 99,
-    JETTISON_LOCK = 98,
+    LOCK_LHM = 98,
     
     HINGE_POWER_OFF = 1,
     HINGE_TAKE_OFF = 2,
