@@ -11,7 +11,18 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
-    jettisonServo.attach(PIN_JETTISON_SERVO_PWM);
+    int servoMin, servoMax;
+    if (JETTISON_SERVO_VALUE_CLOSE < JETTISON_SERVO_VALUE_OPEN)
+    {
+        servoMin = JETTISON_SERVO_VALUE_CLOSE;
+        servoMax = JETTISON_SERVO_VALUE_OPEN;
+    }
+    else 
+    {
+        servoMin = JETTISON_SERVO_VALUE_OPEN;
+        servoMax = JETTISON_SERVO_VALUE_CLOSE;
+    }
+    jettisonServo.attach(PIN_JETTISON_SERVO_PWM, servoMin, servoMax);
 }
 
 void LHMController::initiate()
@@ -112,16 +123,16 @@ bool LHMController::setSwingReductionMode()
 
 bool LHMController::setLandingPosition()
 {
-    bool result = LHMController::hingeMotorX.setOperatingMode(OP_POSITION);
-    result = result && LHMController::hingeMotorX.setAccelerationProfile(PROFILE_ACCELERATION_VAL);
-    result = result && LHMController::hingeMotorX.setVelocityProfile(PROFILE_VELOCITY_VAL);
-    result = result && LHMController::hingeMotorX.setTorqueOn();
-    result = result && LHMController::hingeMotorX.setGoalPosition(HINGE_X_VAL_LANDING_POISITION);
-    result = result && LHMController::hingeMotorY.setOperatingMode(OP_POSITION);
+    bool result = LHMController::hingeMotorY.setOperatingMode(OP_POSITION);
     result = result && LHMController::hingeMotorY.setAccelerationProfile(PROFILE_ACCELERATION_VAL);
     result = result && LHMController::hingeMotorY.setVelocityProfile(PROFILE_VELOCITY_VAL);
     result = result && LHMController::hingeMotorY.setTorqueOn();
     result = result && LHMController::hingeMotorY.setGoalPosition(HINGE_Y_VAL_LANDING_POISITION);
+    result = result && LHMController::hingeMotorX.setOperatingMode(OP_POSITION);
+    result = result && LHMController::hingeMotorX.setAccelerationProfile(PROFILE_ACCELERATION_VAL);
+    result = result && LHMController::hingeMotorX.setVelocityProfile(PROFILE_VELOCITY_VAL);
+    result = result && LHMController::hingeMotorX.setTorqueOn();
+    result = result && LHMController::hingeMotorX.setGoalPosition(HINGE_X_VAL_LANDING_POISITION);
     LHMController::lhmMessage.debugSerial.printf("LHMController::setLandingPosition: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_LANDING, result);
     return result;
