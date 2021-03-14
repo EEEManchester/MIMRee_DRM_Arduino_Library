@@ -43,8 +43,9 @@ void reportStatus()
 {
   hgStatus = lhm.getHingeStatus();
   hkStatus = lhm.getHookStatus();
-  DEBUG_SERIAL.printf("Status: Hinge=%d | Hook=%d\n", (int)hgStatus, (int)hkStatus);
-  COM_SERIAL.printf("$S%d,%d$\n", (int)hgStatus, (int)hkStatus);
+  bool egStatus = lhm.isEngaged();
+  DEBUG_SERIAL.printf("Status: Hinge=%d | Hook=%d | Engaged=%d\n", (int)hgStatus, (int)hkStatus, (int)egStatus);
+  COM_SERIAL.printf("$S%d,%d,%d$\n", (int)hgStatus, (int)hkStatus, (int)egStatus);
 }
 
 void checkCommandIn()
@@ -57,8 +58,8 @@ void checkCommandIn()
   case (int)CommandType::JETTISON:
     lhm.jettison();
     break;
-  case (int)CommandType::JETTISON_LOCK:
-    lhm.jettisonLock();
+  case (int)CommandType::LOCK_LHM:
+    lhm.lockLHM();
     break;
   case (int)CommandType::RESET_DYNAMIXEL_COM:
     lhm.initiate();
