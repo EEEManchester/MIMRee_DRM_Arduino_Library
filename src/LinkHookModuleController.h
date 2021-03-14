@@ -67,7 +67,7 @@ public:
     bool closeHook();
     bool stopHookMotor();
     bool jettison();
-    bool jettisonLock();
+    bool lockLHM();
     LimitSwitchStatus getTopLimitSwitchStatus();
     LimitSwitchStatus getBotLimitSwitchStatus();
 

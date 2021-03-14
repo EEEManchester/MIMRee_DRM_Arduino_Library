@@ -211,7 +211,7 @@ bool LHMController::jettison()
     return true;
 }
 
-bool LHMController::jettisonLock()
+bool LHMController::lockLHM()
 {
     for (int i = 0; i < 10; i++)
     {
