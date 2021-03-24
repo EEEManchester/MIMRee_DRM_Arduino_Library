@@ -37,6 +37,10 @@ const float POSITION_TOLERANCE = 13;
 const float MOVING_THRESHOLD_VELOCITY = 1;
 const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
 
+//Trajectory
+// {M_1_servo_id, M_1_pos, M_1_ACC, M_2_servo_id, M_2_pos, M_2_ACC, etc...}
+const float TRAJ_LANDING[] = {0, 2048, 20, 1, 1024, 20, 0, 1024, 20};
+
 //OpenCM 9.04 + 485 EXP specific
 const int PIN_DXL_DIR = 22;
 const int PIN_LED_0 = 14;

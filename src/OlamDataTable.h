@@ -1,0 +1,10 @@
+#ifndef OLAM_DATA_TABLE_H
+#define OLAM_DATA_TABLE_H
+
+//Pin
+const int PIN_LIMIT_SWITCH_LOW_NO = 11;
+const int PIN_LIMIT_SWITCH_LOW_NC = 12;
+const int PIN_LIMIT_SWITCH_HIGH_NO = 13;
+const int PIN_LIMIT_SWITCH_HIGH_NC = 14;
+
+#endif
