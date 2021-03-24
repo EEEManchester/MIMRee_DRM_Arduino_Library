@@ -101,7 +101,7 @@ HookStatus LHMController::getHookStatus()
     {
         return HookStatus::OFFLINE;
     }
-    if (LHMController::hookMotor.isMoving())
+    if (LHMController::hookMotor.isTorqueOn())
     {
         return LHMController::hookMotionStatus;
     }
