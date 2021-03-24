@@ -10,6 +10,7 @@
 
 #include <Arduino.h>
 #include <USBSerial.h>
+#include <PixhawkArduinoMAVLink.h>
 #include "LinkHookModuleDataTable.h"
 // #include <stdio.h>
 // #include <stdarg.h>
