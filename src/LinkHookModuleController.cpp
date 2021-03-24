@@ -7,10 +7,25 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
       hingeMotorX(DXLMotor(dxl, MOTOR_ID_HINGE_X, lhmMessage)),
       hingeMotorY(DXLMotor(dxl, MOTOR_ID_HINGE_Y, lhmMessage))
 {
+}
+
+void LHMController::initiate()
+{
+    LHMController::dxl.begin(DXL_BAUD_RATE);
+    LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
+    
+    LHMController::hingeMotorX.reboot();
+    LHMController::hingeMotorY.reboot();
+    LHMController::hookMotor.reboot();
+    LHMController::hookMotor.setOperatingMode(OP_VELOCITY);
+    stopHookMotor();
+    stopHingeMotor();
+
     pinMode(PIN_LIMIT_SWITCH_CLOSED_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
+    
     int servoMin, servoMax;
     if (JETTISON_SERVO_VALUE_CLOSE < JETTISON_SERVO_VALUE_OPEN)
     {
@@ -23,16 +38,6 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
         servoMax = JETTISON_SERVO_VALUE_CLOSE;
     }
     jettisonServo.attach(PIN_JETTISON_SERVO_PWM, servoMin, servoMax);
-}
-
-void LHMController::initiate()
-{
-    LHMController::dxl.begin(DXL_BAUD_RATE);
-    LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
-
-    LHMController::hookMotor.setOperatingMode(OP_VELOCITY);
-    stopHookMotor();
-    stopHingeMotor();
 }
 
 HingeStatus LHMController::getHingeStatus()
