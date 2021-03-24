@@ -6,6 +6,13 @@ DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, int motorId, LHMMessage &lhmMessage)
 {
 }
 
+bool DXLMotor::reboot()
+{
+    bool result = DXLMotor::dxl.reboot(DXLMotor::id);
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::reboot:: id[%d] = %d\n", DXLMotor::id, result);
+    return result;
+}
+
 bool DXLMotor::isOnline()
 {
     bool result = DXLMotor::dxl.ping(DXLMotor::id);

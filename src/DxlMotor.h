@@ -18,6 +18,7 @@ public:
     bool isInErrorStatus() { return errorStatus; };
 
     bool isOnline();
+    bool reboot();
     bool isTorqueOn();
     float getCurrentPosition();
     float getCurrentVelocity();
