@@ -36,6 +36,23 @@ enum class ExecutionResult {
     Successful = 1
 };
 
+// class CommandMessage
+// {
+//     public:
+//     CommandType &type;
+//     float dataf;
+//     int datai;
+//     String datas;
+//     CommandMessage(CommandType type, float data):
+//         type(type), dataf(data){};
+//     CommandMessage(CommandType type, int data):
+//         type(type), datai(data){};
+//     CommandMessage(CommandType type, String data):
+//         type(type), datas(data){};
+        
+
+// }
+
 class LHMMessage
 {
     public:
