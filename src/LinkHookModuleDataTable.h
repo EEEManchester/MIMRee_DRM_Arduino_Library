@@ -10,9 +10,8 @@ const int PIN_LIMIT_SWITCH_CLOSED_TOP = 13;      //blue
 const int PIN_LIMIT_SWITCH_OPEN_TOP = 12;        //brown
 const int PIN_LIMIT_SWITCH_CLOSED_BOT = 11;      //yellow
 const int PIN_LIMIT_SWITCH_OPEN_BOT = 10;        //purple
-const int PIN_PE_SENSOR = 9;                     //white
-const int PIN_JETTISON_SERVO_PWM = 8;
-const int PIN_JETTISON_IN = 7;
+const int PIN_PE_SENSOR = 7;                     //white
+const int PIN_JETTISON_SERVO_PWM = 6;
 
 //Communication
 const char SERIAL_PREFIX = '$';
@@ -28,12 +27,12 @@ const float DXL_PROTOCOL_VERSION = 2.0;
 const unsigned long DXL_BAUD_RATE = 1000000;
 
 //Dxl servo user configurations
-const int VELOCITY_HOOK_MOTOR_OPEN = 800;
-const int VELOCITY_HOOK_MOTOR_CLOSE = 1823;
+const int VELOCITY_HOOK_MOTOR_OPEN = 230;
+const int VELOCITY_HOOK_MOTOR_CLOSE = -230;
 const int PROFILE_VELOCITY_VAL = 18;
 const int PROFILE_ACCELERATION_VAL = 2;
-const float HINGE_X_VAL_LANDING_POISITION = 3072;
-const float HINGE_Y_VAL_LANDING_POISITION = 2048;
+const float HINGE_X_VAL_LANDING_POISITION = 2048;
+const float HINGE_Y_VAL_LANDING_POISITION = 1024;
 const float POSITION_TOLERANCE = 13;
 const float MOVING_THRESHOLD_VELOCITY = 1;
 const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
