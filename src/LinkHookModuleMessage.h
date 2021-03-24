@@ -26,9 +26,9 @@ enum class CommandType {
     HINGE_LANDING = 3,
     HINGE_SWING_REDUCTION = 4,
     
-    HOOK_POWER_OFF = 6,
-    HOOK_CLOSE = 7,
-    HOOK_OPEN = 8
+    HOOK_POWER_OFF = 10,
+    HOOK_CLOSE = 11,
+    HOOK_OPEN = 12,
 };
 
 enum class ExecutionResult {
