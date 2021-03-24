@@ -16,13 +16,24 @@ bool DXLMotor::reboot()
 bool DXLMotor::isOnline()
 {
     bool result = DXLMotor::dxl.ping(DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isOnline:: id[%d] = %d\n", DXLMotor::id, result);
-    return result;
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isOnline:: id[%d][ping] = %d\n", DXLMotor::id, result);
+    bool result2 = isTorqueOn();
+    return result || result2;
 }
 
 bool DXLMotor::isTorqueOn()
 {
     bool result = DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
+    int count = 0;
+    while (!result)
+    {
+        result = result || DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
+        count ++;
+        if (count >=5)
+        {
+            break;
+        }
+    }
     DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
     return result;
 }
@@ -46,28 +57,6 @@ bool DXLMotor::isMoving()
     int32_t result = DXLMotor::dxl.readControlTableItem(MOVING, DXLMotor::id);
     DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isMoving:: id[%d] = %d\n", DXLMotor::id, result);
     return result == 1;
-    // if (!isTorqueOn())
-    // {
-    //     return false;
-    // }
-    // OperatingMode opMode = getCurrentOperatingMode();
-    // if (opMode == OP_CURRENT)
-    // {
-    //     return true;
-    // }
-    // bool isStationary = getCurrentVelocity() < MOVING_THRESHOLD_VELOCITY;
-    // if (opMode == OP_VELOCITY)
-    // {
-    //     return isStationary;
-    // }
-    // if (opMode == OP_POSITION)
-    // {
-    //     if (!isStationary)
-    //     {
-    //         return true;
-    //     }
-    //     return abs(getCurrentPosition() - getCurrentGoalPosition()) > POSITION_TOLERANCE;
-    // }
 }
 
 bool DXLMotor::isAtGoalPosition()
@@ -77,7 +66,10 @@ bool DXLMotor::isAtGoalPosition()
 
 bool DXLMotor::isAtPosition(float position)
 {
-    return position - getCurrentPosition() < POSITION_TOLERANCE;
+    float diff = abs(position - getCurrentPosition());
+    bool result = diff < POSITION_TOLERANCE;
+    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isAtPosition:: id[%d] = %d | diff=%f\n", DXLMotor::id, result, diff);
+    return result;
 }
 
 bool DXLMotor::setOperatingMode(OperatingMode op)
@@ -87,7 +79,7 @@ bool DXLMotor::setOperatingMode(OperatingMode op)
     {
         setTorqueOff();
     }
-
+    
     bool result = DXLMotor::dxl.setOperatingMode(DXLMotor::id, op);
     if (result)
     {
