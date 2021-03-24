@@ -1,5 +1,5 @@
-#ifndef LINK_HOOK_MODULE_DATA_TABLE_H
-#define LINK_HOOK_MODULE_DATA_TABLE_H
+#ifndef LHM_DATA_TABLE_H
+#define LHM_DATA_TABLE_H
 
 #define SERIAL_CLASS USBSerial
 #define SERIAL2_CLASS UARTClass
@@ -21,8 +21,8 @@ const char SERIAL_MESSAGE_TYPE_INDICATOR_STATUS = 'S';
 
 //Dxl servo firmware settings
 const int MOTOR_ID_HOOK = 1;
-const int MOTOR_ID_HINGE_Y = 2;
-const int MOTOR_ID_HINGE_X = 3;
+const int MOTOR_ID_HINGE_PITCH = 3;
+const int MOTOR_ID_HINGE_ROLL = 2;
 const float DXL_PROTOCOL_VERSION = 2.0;
 const unsigned long DXL_BAUD_RATE = 1000000;
 
@@ -33,13 +33,14 @@ const int PROFILE_VELOCITY_VAL = 18;
 const int PROFILE_ACCELERATION_VAL = 2;
 const float HINGE_X_VAL_LANDING_POISITION = 2048;
 const float HINGE_Y_VAL_LANDING_POISITION = 1024;
+const int HINGE_POS_VER = 2048;
 const float POSITION_TOLERANCE = 13;
 const float MOVING_THRESHOLD_VELOCITY = 1;
 const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
 
-//Trajectory
+//Motion sequence
 // {M_1_servo_id, M_1_pos, M_1_ACC, M_2_servo_id, M_2_pos, M_2_ACC, etc...}
-const float TRAJ_LANDING[] = {0, 2048, 20, 1, 1024, 20, 0, 1024, 20};
+const int MOTION_SEQ_LANDING[] = {MOTOR_ID_HINGE_ROLL, HINGE_POS_VER, 20, MOTOR_ID_HINGE_PITCH, 1024, 20, MOTOR_ID_HINGE_ROLL, 1024, 20};
 
 //OpenCM 9.04 + 485 EXP specific
 const int PIN_DXL_DIR = 22;

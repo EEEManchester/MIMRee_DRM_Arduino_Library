@@ -1,15 +1,16 @@
 //TODO Retry on execution failure
 
-#ifndef LINK_HOOK_MODULE_CONTROLLER_H
-#define LINK_HOOK_MODULE_CONTROLLER_H
+#ifndef LHM_CONTROLLER_H
+#define LHM_CONTROLLER_H
 
 #include <Arduino.h>
 #include <USBSerial.h>
 #include <Dynamixel2Arduino.h>
 #include <Servo.h>
-#include "LinkHookModuleDataTable.h"
-#include "LinkHookModuleMessage.h"
+#include "LHMDataTable.h"
+#include "LHMMessage.h"
 #include "DxlMotor.h"
+#include "MotionSequence.h"
 
 enum class HookStatus
 {
@@ -37,7 +38,7 @@ enum class HingeStatus
 
 enum class OnOffStatus
 {
-    OFF,
+    OFF = 0,
     ON
 };
 
@@ -62,6 +63,8 @@ public:
     bool setTakeoffMode();
     bool setLandingPosition();
     bool isAtLandingPosition();
+    MotionSequenceStatusType getMotionSequenceStatus();
+    int8_t nextMotionSequence();
     bool stopHingeMotor();
     bool openHook();
     bool closeHook();
@@ -72,8 +75,8 @@ public:
     LimitSwitchStatus getBotLimitSwitchStatus();
 
     DXLMotor hookMotor;
-    DXLMotor hingeMotorX;
-    DXLMotor hingeMotorY;
+    DXLMotor hingeMotorPitch;
+    DXLMotor hingeMotorRoll;
     LHMMessage lhmMessage;
 
 private:
@@ -81,9 +84,12 @@ private:
     Servo jettisonServo;
     HookStatus hookMotionStatus;
     HingeStatus hingeStatus;
+    bool _isInMotionSequence;
+    bool _motionSequenceStage;
     LimitSwitchStatus getLimitSwitchStatus(int on_pin, int off_pin);
     OnOffStatus getPESensorStatus();
     int digitalReadExt(int pin);
+    MotionSequence *currentMotionSequence;
 };
 
 #endif

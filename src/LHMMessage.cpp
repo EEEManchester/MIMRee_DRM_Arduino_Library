@@ -1,4 +1,4 @@
-#include "LinkHookModuleMessage.h"
+#include "LHMMessage.h"
 
 LHMMessage::LHMMessage(COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial) : comSerial(comSerial), debugSerial(debugSerial)
 {

@@ -25,8 +25,8 @@ class PixhawkArduinoMAVLink
   private:
     HardwareSerial* _MAVSerial;
     double MILLIG_TO_MS2;
-    uint8_t system_id;
-    uint8_t component_id;
+    const uint8_t system_id = 1;
+    const uint8_t component_id = 158;
     uint8_t type;
     uint8_t autopilot;
     uint8_t received_sysid; // Pixhawk sysid

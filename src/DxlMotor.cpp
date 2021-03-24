@@ -8,183 +8,205 @@ DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, int motorId, LHMMessage &lhmMessage)
 
 bool DXLMotor::reboot()
 {
-    bool result = DXLMotor::dxl.reboot(DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::reboot:: id[%d] = %d\n", DXLMotor::id, result);
+    bool result = repeatCOM<uint8_t, uint32_t>(&Dynamixel2Arduino::reboot, id, 10U);
+    lhmMessage.debugSerial.printf("DXLMotor::reboot:: id[%d] = %d\n", id, result);
+    lastSetOperatingMode = UNKNOWN_OP;
+    resetOPRelatedParamRecords();
     return result;
 }
 
 bool DXLMotor::isOnline()
-{
-    bool result = DXLMotor::dxl.ping(DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isOnline:: id[%d][ping] = %d\n", DXLMotor::id, result);
+{    
+    bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::ping, id);
+    lhmMessage.debugSerial.printf("DXLMotor::isOnline:: id[%d][ping] = %d\n", id, result);
     bool result2 = isTorqueOn();
     return result || result2;
 }
 
 bool DXLMotor::isTorqueOn()
 {
-    bool result = DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
-    int count = 0;
-    while (!result)
-    {
-        result = result || DXLMotor::dxl.getTorqueEnableStat(DXLMotor::id);
-        count ++;
-        if (count >=5)
-        {
-            break;
-        }
-    }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::getTorqueEnableStat, id);
+    lhmMessage.debugSerial.printf("DXLMotor::isTorqueOn:: id[%d] = %d\n", id, result);
     return result;
 }
 
 float DXLMotor::getCurrentPosition()
 {
-    float result = DXLMotor::dxl.getPresentPosition(DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::getCurrentPosition:: id[%d] = %f\n", DXLMotor::id, result);
+    float result = dxl.getPresentPosition(id);
+    lhmMessage.debugSerial.printf("DXLMotor::getCurrentPosition:: id[%d] = %f\n", id, result);
     return result;
 }
 
 float DXLMotor::getCurrentVelocity()
 {
-    float result = DXLMotor::dxl.getPresentVelocity(DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", DXLMotor::id, result);
+    float result = dxl.getPresentVelocity(id);
+    lhmMessage.debugSerial.printf("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", id, result);
     return result;
 }
 
 bool DXLMotor::isMoving()
 {
-    int32_t result = DXLMotor::dxl.readControlTableItem(MOVING, DXLMotor::id);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isMoving:: id[%d] = %d\n", DXLMotor::id, result);
+    int32_t result = dxl.readControlTableItem(MOVING, id);
+    lhmMessage.debugSerial.printf("DXLMotor::isMoving:: id[%d] = %d\n", id, result);
     return result == 1;
 }
 
-bool DXLMotor::isAtGoalPosition()
+bool DXLMotor::isAtGoalPosition(float positionTolerance)
 {
-    return isAtPosition(DXLMotor::goalPosition);
+    return isAtPosition(lastSetGoalPosition, positionTolerance);
 }
 
-bool DXLMotor::isAtPosition(float position)
+bool DXLMotor::isAtPosition(float position, float positionTolerance)
 {
+    if (positionTolerance < 0)
+    {
+        positionTolerance = POSITION_TOLERANCE;
+    }
     float diff = abs(position - getCurrentPosition());
-    bool result = diff < POSITION_TOLERANCE;
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::isAtPosition:: id[%d] = %d | diff=%f\n", DXLMotor::id, result, diff);
+    bool result = diff < positionTolerance;
+    lhmMessage.debugSerial.printf("DXLMotor::isAtPosition:: id[%d] = %d | diff=%f\n", id, result, diff);
     return result;
 }
 
 bool DXLMotor::setOperatingMode(OperatingMode op)
 {
+    if (lastSetOperatingMode == op)
+    {
+        return true;
+    }
     // For safety concerns, always torque off before setting operating mode.
     if (isTorqueOn())
     {
         setTorqueOff();
     }
-    
-    bool result = DXLMotor::dxl.setOperatingMode(DXLMotor::id, op);
+    bool result = repeatCOM<uint8_t, uint8_t>(&Dynamixel2Arduino::setOperatingMode, id, op);
     if (result)
     {
-        DXLMotor::operationMode = op;
-        DXLMotor::errorStatus = false;
+        lastSetOperatingMode = op;
+        errorStatus = false;
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setOperatingMode:: id[%d] -> [%d] = %d\n", DXLMotor::id, op, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setOperatingMode:: id[%d] -> [%d] = %d\n", id, op, result);
+    resetOPRelatedParamRecords();
     return result;
 }
 
 bool DXLMotor::setTorqueOff()
 {
-    bool result = DXLMotor::dxl.torqueOff(DXLMotor::id);
+    bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::torqueOff, id);
     if (result)
     {
-        DXLMotor::errorStatus = false;
+        errorStatus = false;
         setLED(false);
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setTorqueOff:: id[%d] = %d\n", DXLMotor::id, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setTorqueOff:: id[%d] = %d\n", id, result);
     return result;
 }
 
 bool DXLMotor::setTorqueOn()
 {
-    bool result = DXLMotor::dxl.torqueOn(DXLMotor::id);
+    bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::torqueOn, id);
     if (result)
     {
-        DXLMotor::errorStatus = false;
+        errorStatus = false;
         setLED(true);
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setTorqueOn:: id[%d] = %d\n", DXLMotor::id, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setTorqueOn:: id[%d] = %d\n", id, result);
     return result;
 }
 
 bool DXLMotor::setVelocityProfile(int val)
 {
-    bool result = DXLMotor::dxl.writeControlTableItem(PROFILE_VELOCITY, DXLMotor::id, val);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setVelocityProfile:: id[%d] = %d\n", DXLMotor::id, result);
+    if (val == lastSetVelocityProfile)
+    {
+        return true;
+    }
+    bool result = repeatCOM<uint8_t,uint8_t,int32_t,uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_VELOCITY, id, val, 100);
+    lhmMessage.debugSerial.printf("DXLMotor::setVelocityProfile:: id[%d] = %d\n", id, result);
+    lastSetVelocityProfile = val;
     return result;
 }
 
 bool DXLMotor::setAccelerationProfile(int val)
 {
-    bool result = DXLMotor::dxl.writeControlTableItem(PROFILE_ACCELERATION, DXLMotor::id, val);
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setAccelerationProfile:: id[%d] = %d\n", DXLMotor::id, result);
+    if (val == lastSetAccelerationProfile)
+    {
+        return true;
+    }
+    bool result = repeatCOM<uint8_t,uint8_t,int32_t,uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_ACCELERATION, id, val, 100);
+    lhmMessage.debugSerial.printf("DXLMotor::setAccelerationProfile:: id[%d] = %d\n", id, result);
+    lastSetAccelerationProfile = val;
     return result;
 }
 
 bool DXLMotor::setGoalVelocity(float velocity)
-{    
-    bool result = DXLMotor::dxl.setGoalVelocity(DXLMotor::id, velocity);
+{
+    if (abs(velocity - lastSetGoalVelocity) < 0.000001)
+    {
+        return true;
+    }
+    bool result = repeatCOM<uint8_t,float,uint8_t>(&Dynamixel2Arduino::setGoalVelocity, id, velocity, 0U);
     if (result)
     {
-        DXLMotor::goalVelocity = velocity;
-        DXLMotor::errorStatus = false;
+        lastSetGoalVelocity = velocity;
+        errorStatus = false;
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalVelocity:: id[%d] -> [%f] = %d\n", DXLMotor::id, velocity, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setGoalVelocity:: id[%d] -> [%f] = %d\n", id, velocity, result);
     return result;
 }
 
 bool DXLMotor::setGoalCurrent(float current)
 {
-    bool result = DXLMotor::dxl.setGoalCurrent(DXLMotor::id, current);
+    if (abs(current - lastSetGoalCurrent) < 0.000001)
+    {
+        return true;
+    }
+    bool result = repeatCOM<uint8_t,float,uint8_t>(&Dynamixel2Arduino::setGoalCurrent, id, current, 0U);
     if (result)
     {
-        DXLMotor::goalCurrent = current;
-        DXLMotor::errorStatus = false;
+        lastSetGoalCurrent = current;
+        errorStatus = false;
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalCurrent:: id[%d] -> [%f] = %d\n", DXLMotor::id, current, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setGoalCurrent:: id[%d] -> [%f] = %d\n", id, current, result);
     return result;
 }
 
 bool DXLMotor::setGoalPosition(float position)
 {
-    bool result = DXLMotor::dxl.setGoalPosition(DXLMotor::id, position);
+    if (abs(position - lastSetGoalPosition) < 0.000001)
+    {
+        return true;
+    }
+    bool result = repeatCOM<uint8_t,float,uint8_t>(&Dynamixel2Arduino::setGoalPosition, id, position, 0U);
     if (result)
     {
-        DXLMotor::goalPosition = position;
-        DXLMotor::errorStatus = false;
+        lastSetGoalPosition = position;
+        errorStatus = false;
     }
     else
     {
-        DXLMotor::errorStatus = true;
+        errorStatus = true;
     }
-    DXLMotor::lhmMessage.debugSerial.printf("DXLMotor::setGoalPosition:: id[%d] -> [%f] = %d\n", DXLMotor::id, position, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setGoalPosition:: id[%d] -> [%f] = %d\n", id, position, result);
     return result;
 }
 
@@ -192,11 +214,11 @@ void DXLMotor::setLED(bool setOn)
 {
     if (setOn)
     {
-        DXLMotor::dxl.ledOn(DXLMotor::id);
+        dxl.ledOn(id);
     }
     else
     {
-        DXLMotor::dxl.ledOff(DXLMotor::id);
+        dxl.ledOff(id);
     }
 }
 
@@ -209,4 +231,78 @@ void DXLMotor::flashLED(int times, unsigned long interval)
         setLED(false);
         delay(interval);
     }
+}
+
+void DXLMotor::resetOPRelatedParamRecords()
+{
+    lastSetAccelerationProfile = -999;
+    lastSetAccelerationProfile = -999;
+    lastSetGoalCurrent = -999;
+    lastSetGoalPosition = -999;
+    lastSetGoalVelocity = -999;
+}
+
+bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)())
+{
+    int count = 0;
+    bool result = ((dxl).*(dxlFunc))();
+    while (!result)
+    {
+        result = ((dxl).*(dxlFunc))();
+        if (count >= MAX_DXL_PROTOCOL_ATTEMPTS)
+        {
+            break;
+        }
+    }
+    return result;
+}
+
+template <typename T>
+bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T), T arg)
+{
+    int count = 0;
+    bool result = ((dxl).*(dxlFunc))(arg);
+    while (!result && count < MAX_DXL_PROTOCOL_ATTEMPTS)
+    {
+        result = ((dxl).*(dxlFunc))(arg);
+        count ++;
+    }
+    return result;
+}
+
+template <typename T1, typename T2>
+bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2), T1 arg, T2 arg1)
+{
+    int count = 0;
+    bool result = ((dxl).*(dxlFunc))(arg, arg1);
+    while (!result && count < MAX_DXL_PROTOCOL_ATTEMPTS)
+    {
+        result = ((dxl).*(dxlFunc))(arg, arg1);
+        count ++;
+    }
+    return result;
+}
+
+template <typename T1, typename T2, typename T3>
+bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T1 arg, T2 arg1, T3 arg2){
+    int count = 0;
+    bool result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
+    while (!result && count < MAX_DXL_PROTOCOL_ATTEMPTS)
+    {
+        result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
+        count ++;
+    }
+    return result;
+}
+
+template <typename T1, typename T2, typename T3, typename T4>
+bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3, T4), T1 arg, T2 arg1, T3 arg2, T4 arg3){
+    int count = 0;
+    bool result = ((dxl).*(dxlFunc))(arg, arg1, arg2, arg3);
+    while (!result)
+    {
+        result = ((dxl).*(dxlFunc))(arg, arg1, arg2, arg3);
+        count ++;
+    }
+    return result;
 }

@@ -1,5 +1,5 @@
-#ifndef LINK_HOOK_MODULE_MESSAGE_H
-#define LINK_HOOK_MODULE_MESSAGE_H
+#ifndef LHM_MESSAGE_H
+#define LHM_MESSAGE_H
 
 #define __builtin_va_start(v,l)
 #define __builtin_va_end(v)
@@ -10,8 +10,8 @@
 
 #include <Arduino.h>
 #include <USBSerial.h>
-#include <PixhawkArduinoMAVLink.h>
-#include "LinkHookModuleDataTable.h"
+// #include <PixhawkArduinoMAVLink.h>
+#include "LHMDataTable.h"
 // #include <stdio.h>
 // #include <stdarg.h>
 

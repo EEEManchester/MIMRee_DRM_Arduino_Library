@@ -8,9 +8,6 @@
 
 PixhawkArduinoMAVLink::PixhawkArduinoMAVLink(HardwareSerial &hs){
   _MAVSerial = &hs;
-  MILLIG_TO_MS2 = 9.80665 / 1000.0;
-  system_id = 1; // Your i.e. Arduino sysid
-  component_id = 158; // Your i.e. Arduino compid
   type = MAV_TYPE_QUADROTOR;
   autopilot =  MAV_AUTOPILOT_INVALID;
 }

@@ -1,11 +1,11 @@
-#include "LinkHookModuleController.h"
+#include "LHMController.h"
 
 LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial)
     : dxl(Dynamixel2Arduino(servoSerial, PIN_DXL_DIR)),
       lhmMessage(comSerial, debugSerial),
       hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, lhmMessage)),
-      hingeMotorX(DXLMotor(dxl, MOTOR_ID_HINGE_X, lhmMessage)),
-      hingeMotorY(DXLMotor(dxl, MOTOR_ID_HINGE_Y, lhmMessage))
+      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, lhmMessage)),
+      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, lhmMessage))
 {
 }
 
@@ -13,9 +13,9 @@ void LHMController::initiate()
 {
     LHMController::dxl.begin(DXL_BAUD_RATE);
     LHMController::dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
-    
-    LHMController::hingeMotorX.reboot();
-    LHMController::hingeMotorY.reboot();
+
+    LHMController::hingeMotorPitch.reboot();
+    LHMController::hingeMotorRoll.reboot();
     LHMController::hookMotor.reboot();
     LHMController::hookMotor.setOperatingMode(OP_VELOCITY);
     stopHookMotor();
@@ -25,14 +25,14 @@ void LHMController::initiate()
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
-    
+
     int servoMin, servoMax;
     if (JETTISON_SERVO_VALUE_CLOSE < JETTISON_SERVO_VALUE_OPEN)
     {
         servoMin = JETTISON_SERVO_VALUE_CLOSE;
         servoMax = JETTISON_SERVO_VALUE_OPEN;
     }
-    else 
+    else
     {
         servoMin = JETTISON_SERVO_VALUE_OPEN;
         servoMax = JETTISON_SERVO_VALUE_CLOSE;
@@ -42,12 +42,12 @@ void LHMController::initiate()
 
 HingeStatus LHMController::getHingeStatus()
 {
-    if (!LHMController::hingeMotorX.isOnline() || !LHMController::hingeMotorY.isOnline())
+    if (!LHMController::hingeMotorPitch.isOnline() || !LHMController::hingeMotorRoll.isOnline())
     {
         return HingeStatus::OFFLINE;
     }
-    bool torque_x = LHMController::hingeMotorX.isTorqueOn();
-    bool torque_y = LHMController::hingeMotorY.isTorqueOn();
+    bool torque_x = LHMController::hingeMotorPitch.isTorqueOn();
+    bool torque_y = LHMController::hingeMotorRoll.isTorqueOn();
     if (!torque_x)
     {
         if (!torque_y)
@@ -55,8 +55,8 @@ HingeStatus LHMController::getHingeStatus()
         else
             return HingeStatus::ERROR;
     }
-    OperatingMode op_x = LHMController::hingeMotorX.getLastSetOperatingMode();
-    OperatingMode op_y = LHMController::hingeMotorY.getLastSetOperatingMode();
+    OperatingMode op_x = LHMController::hingeMotorPitch.getLastSetOperatingMode();
+    OperatingMode op_y = LHMController::hingeMotorRoll.getLastSetOperatingMode();
     if (op_x == OP_CURRENT)
     {
         if (op_y == OP_CURRENT)
@@ -68,13 +68,30 @@ HingeStatus LHMController::getHingeStatus()
     {
         if (!op_y == OP_POSITION)
             return HingeStatus::ERROR;
-        if (LHMController::hingeMotorX.getLastSetGoalPosition() != HINGE_X_VAL_LANDING_POISITION || LHMController::hingeMotorY.getLastSetGoalPosition() != HINGE_Y_VAL_LANDING_POISITION)
+        if (currentMotionSequence == nullptr)
             return HingeStatus::ERROR;
-
-        if (LHMController::hingeMotorX.isAtGoalPosition() && LHMController::hingeMotorY.isAtGoalPosition())
-            return HingeStatus::LANDING_POSITION_READY;
+        if (currentMotionSequence->sequenceType() == MotionSequenceType::LANDING)
+        {
+            MotionSequenceStatusType status = currentMotionSequence->status();
+            if (status == MotionSequenceStatusType::COMPLETED)
+            {
+                return HingeStatus::LANDING_POSITION_READY;
+            }
+            else if (status == MotionSequenceStatusType::BUSY || status == MotionSequenceStatusType::STAGE_COMPLETED)
+            {
+                return HingeStatus::LANDING_POSITION_IN_TRANSITION;
+            }
+            else if (status == MotionSequenceStatusType::ERROR)
+            {
+                return HingeStatus::ERROR;
+            }
+            else
+            {
+                return HingeStatus::UNKNOWN;
+            }
+        }
         else
-            return HingeStatus::LANDING_POSITION_IN_TRANSITION;
+            return HingeStatus::ERROR;
     }
 }
 
@@ -115,12 +132,12 @@ bool LHMController::isEngaged()
 
 bool LHMController::setSwingReductionMode()
 {
-    bool result = LHMController::hingeMotorX.setOperatingMode(OP_CURRENT);
-    result = result && LHMController::hingeMotorX.setTorqueOn();
-    result = result && LHMController::hingeMotorX.setGoalCurrent(0);
-    result = result && LHMController::hingeMotorY.setOperatingMode(OP_CURRENT);
-    result = result && LHMController::hingeMotorY.setTorqueOn();
-    result = result && LHMController::hingeMotorY.setGoalCurrent(0);
+    bool result = LHMController::hingeMotorPitch.setOperatingMode(OP_CURRENT);
+    result = result && LHMController::hingeMotorPitch.setTorqueOn();
+    result = result && LHMController::hingeMotorPitch.setGoalCurrent(0);
+    result = result && LHMController::hingeMotorRoll.setOperatingMode(OP_CURRENT);
+    result = result && LHMController::hingeMotorRoll.setTorqueOn();
+    result = result && LHMController::hingeMotorRoll.setGoalCurrent(0);
     LHMController::lhmMessage.debugSerial.printf("LHMController::setSwingReductionMode: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_SWING_REDUCTION, result);
     return result;
@@ -128,30 +145,46 @@ bool LHMController::setSwingReductionMode()
 
 bool LHMController::setLandingPosition()
 {
-    bool result = LHMController::hingeMotorY.setOperatingMode(OP_POSITION);
-    result = result && LHMController::hingeMotorY.setAccelerationProfile(PROFILE_ACCELERATION_VAL);
-    result = result && LHMController::hingeMotorY.setVelocityProfile(PROFILE_VELOCITY_VAL);
-    result = result && LHMController::hingeMotorY.setTorqueOn();
-    result = result && LHMController::hingeMotorY.setGoalPosition(HINGE_Y_VAL_LANDING_POISITION);
-    result = result && LHMController::hingeMotorX.setOperatingMode(OP_POSITION);
-    result = result && LHMController::hingeMotorX.setAccelerationProfile(PROFILE_ACCELERATION_VAL);
-    result = result && LHMController::hingeMotorX.setVelocityProfile(PROFILE_VELOCITY_VAL);
-    result = result && LHMController::hingeMotorX.setTorqueOn();
-    result = result && LHMController::hingeMotorX.setGoalPosition(HINGE_X_VAL_LANDING_POISITION);
-    LHMController::lhmMessage.debugSerial.printf("LHMController::setLandingPosition: %s\n", result ? "Successful" : "Failed");
-    LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_LANDING, result);
-    return result;
+    DXLMotor *motors;
+    if (MOTOR_ID_HINGE_PITCH == 2)
+    {
+        DXLMotor motors[3] = {hookMotor, hingeMotorPitch, hingeMotorRoll};
+    }
+    else
+    {
+        DXLMotor motors[3] = {hookMotor, hingeMotorPitch, hingeMotorRoll};
+    }
+    MotionSequence ms = MotionSequence(MotionSequenceType::LANDING, motors, MOTION_SEQ_LANDING);
+    currentMotionSequence = &ms;
+    return currentMotionSequence->next();
 }
 
 bool LHMController::isAtLandingPosition()
 {
-    return LHMController::hingeMotorX.isAtPosition(HINGE_X_VAL_LANDING_POISITION);
+    return LHMController::hingeMotorPitch.isAtPosition(HINGE_X_VAL_LANDING_POISITION);
+}
+
+MotionSequenceStatusType LHMController::getMotionSequenceStatus()
+{
+    if (currentMotionSequence == nullptr)
+    {
+        return MotionSequenceStatusType::UNKNOWN;
+    }
+    return currentMotionSequence->status();
+}
+
+int8_t LHMController::nextMotionSequence() {
+    if (currentMotionSequence == nullptr)
+    {
+        return -1;
+    }
+    return currentMotionSequence->next();
 }
 
 bool LHMController::setTakeoffMode()
 {
-    bool result = LHMController::hingeMotorX.setTorqueOff();
-    result = result && LHMController::hingeMotorY.setTorqueOff();
+    bool result = LHMController::hingeMotorPitch.setTorqueOff();
+    result = result && LHMController::hingeMotorRoll.setTorqueOff();
     LHMController::lhmMessage.debugSerial.printf("LHMController::setTakeoffMode: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_TAKE_OFF, result);
     return result;
@@ -159,8 +192,8 @@ bool LHMController::setTakeoffMode()
 
 bool LHMController::stopHingeMotor()
 {
-    bool result = LHMController::hingeMotorX.setTorqueOff();
-    result = result && LHMController::hingeMotorY.setTorqueOff();
+    bool result = LHMController::hingeMotorPitch.setTorqueOff();
+    result = result && LHMController::hingeMotorRoll.setTorqueOff();
     LHMController::lhmMessage.debugSerial.printf("LHMController::stopHingeMotor: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_POWER_OFF, result);
     return result;

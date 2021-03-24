@@ -1,4 +1,4 @@
-#include <LinkHookModuleController.h>
+#include <LHMController.h>
 
 #define DXL_SERIAL   Serial3
 #define COM_SERIAL   Serial
@@ -12,13 +12,15 @@ LHMController lhm(DXL_SERIAL, COM_SERIAL, DEBUG_SERIAL);
 void setup() {
   DEBUG_SERIAL.begin(9600);
   lhm.initiate();
-  pulseLEDSequantial();
+  // pulseLEDSequantial();
+  DEBUG_SERIAL.println("Initialized.");
 }
 
 long prevStatusReportTime = 0;
 long prevCommandInCheckTime = 0;
 HingeStatus hgStatus;
 HookStatus hkStatus;
+bool hingeInTransition = false;
 
 void loop() {
   if ((int)millis() - prevStatusReportTime > STATUS_REPORT_INTERVAL)
@@ -36,6 +38,11 @@ void loop() {
   {
     if (hkStatus != HookStatus::OPENNING || hkStatus != HookStatus::OPENNING)
       lhm.stopHookMotor();
+  }
+
+  if (hingeInTransition)
+  {
+    trackHingeTransition();
   }
 }
 
@@ -71,7 +78,7 @@ void checkCommandIn()
     lhm.setTakeoffMode();
     break;
   case (int)CommandType::HINGE_LANDING:
-    lhm.setLandingPosition();
+    hingeInTransition = lhm.setLandingPosition();
     break;
   case (int)CommandType::HINGE_SWING_REDUCTION:
     lhm.setSwingReductionMode();
@@ -88,8 +95,27 @@ void checkCommandIn()
   }
 }
 
+void trackHingeTransition()
+{
+  MotionSequenceStatusType status = lhm.getMotionSequenceStatus();
+  switch (status)
+  {
+    case MotionSequenceStatusType::COMPLETED:
+      hingeInTransition = false;
+      break;
+    case MotionSequenceStatusType::STAGE_COMPLETED:
+      lhm.nextMotionSequence();
+      break;
+    case MotionSequenceStatusType::BUSY:
+      break;
+    case MotionSequenceStatusType::ERROR:
+    case MotionSequenceStatusType::UNKNOWN:
+      hingeInTransition = false;
+  }
+}
+
 void pulseLEDSequantial() {
-  lhm.hingeMotorX.flashLED(10, 200);
-  lhm.hingeMotorY.flashLED(10, 200);
+  lhm.hingeMotorPitch.flashLED(10, 200);
+  lhm.hingeMotorRoll.flashLED(10, 200);
   lhm.hookMotor.flashLED(10, 200);
 }
