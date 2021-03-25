@@ -3,13 +3,15 @@
 
 #include <Arduino.h>
 #include <Dynamixel2Arduino.h>
-#include "LHMDataTable.h"
-#include "LHMMessage.h"
+
+#ifndef DEBUG_SERIAL_CLASS
+#define DEBUG_SERIAL_CLASS USBSerial
+#endif
 
 class DXLMotor
 {
 public:
-    DXLMotor(Dynamixel2Arduino &dxl, int motorId, LHMMessage &lhmMessage);
+    DXLMotor(Dynamixel2Arduino &dxl, int motorId, DEBUG_SERIAL_CLASS &debugSerial);
     int getId() { return id; };
     float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
     float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
@@ -42,7 +44,7 @@ public:
 
 private:
     Dynamixel2Arduino &dxl;
-    LHMMessage &lhmMessage;
+    DEBUG_SERIAL_CLASS &debugSerial;
     int id;
     bool errorStatus;
     bool setGoalVelocityRaw(float velocity);
