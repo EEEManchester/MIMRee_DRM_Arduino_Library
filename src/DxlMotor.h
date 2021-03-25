@@ -11,14 +11,14 @@
 class DXLMotor
 {
 public:
-    DXLMotor(Dynamixel2Arduino &dxl, int motorId, DEBUG_SERIAL_CLASS &debugSerial);
-    int getId() { return id; };
+    DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId, DEBUG_SERIAL_CLASS &debugSerial);
+    uint8_t getId() { return id; };
     float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
     float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
     float getLastSetGoalPosition() { return lastSetGoalPosition; };
     OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; };
-    int getLastSetVelocityProfile() { return lastSetVelocityProfile; }
-    int getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
+    int32_t getLastSetVelocityProfile() { return lastSetVelocityProfile; }
+    int32_t getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
     bool isInErrorStatus() { return errorStatus; };
 
     bool isOnline();
@@ -36,28 +36,32 @@ public:
     bool setGoalVelocity(float velocity);
     bool setGoalCurrent(float current);
     bool setGoalPosition(float position);
-    bool setVelocityProfile(int val);
-    bool setAccelerationProfile(int val);
+    bool setVelocityProfile(int32_t val);
+    bool setAccelerationProfile(int32_t val);
 
     void setLED(bool setOn);
-    void flashLED(int times, unsigned long interval = 50);
+    void flashLED(uint8_t times, unsigned long interval = 50);
 
 private:
+    const uint8_t MAX_DXL_PROTOCOL_ATTEMPTS = 5;
+
     Dynamixel2Arduino &dxl;
     DEBUG_SERIAL_CLASS &debugSerial;
-    int id;
+    uint8_t id;
     bool errorStatus;
+    
+    OperatingMode lastSetOperatingMode = UNKNOWN_OP;
+    float lastSetGoalVelocity = -32768;
+    float lastSetGoalCurrent = -32768;
+    float lastSetGoalPosition = -32768;
+    int32_t lastSetVelocityProfile = -32768;
+    int32_t lastSetAccelerationProfile = -32768;
+    void resetOPRelatedParamRecords();
+
     bool setGoalVelocityRaw(float velocity);
     bool setGoalCurrentRaw(float current);
     bool setGoalPositionRaw(float position);
-    OperatingMode lastSetOperatingMode = UNKNOWN_OP;
-    float lastSetGoalVelocity = -999;
-    float lastSetGoalCurrent = -999;
-    float lastSetGoalPosition = -999;
-    int lastSetVelocityProfile = -999;
-    int lastSetAccelerationProfile = -999;
-    void resetOPRelatedParamRecords();
-    const int MAX_DXL_PROTOCOL_ATTEMPTS = 5;
+    
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)());
     template <typename T>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T), T arg);

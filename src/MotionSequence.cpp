@@ -1,7 +1,7 @@
 #include "MotionSequence.h"
 using namespace ControlTableItem;
 
-MotionSequence::MotionSequence(MotionSequenceType sequenceType, DXLMotor *_motors[], const int sequence[])
+MotionSequence::MotionSequence(MotionSequenceType sequenceType, DXLMotor *_motors[], const uint16_t sequence[])
     : _sequenceType(sequenceType),
       motors(_motors),
       sequence(sequence)
@@ -39,15 +39,15 @@ MotionSequenceStatusType MotionSequence::status()
 int8_t MotionSequence::next()
 {
     printDebugInfo("MotionSequence::next");
-    int nextStageId = currentStage.stageId() + 1;
+    int8_t nextStageId = currentStage.stageId() + 1;
     Serial.printf("MotionSequence::next: Sequence type: %d, Stage ID: %d/%d\n", (int)_sequenceType, nextStageId, sequence[0] - 1);
     if (nextStageId > sequence[0] - 1)
     {
         return 2;
     }
-    int motorId = sequence[nextStageId * 3 + 1]-1;
-    int goalPos = sequence[nextStageId * 3 + 2];
-    int accuracy = sequence[nextStageId * 3 + 3];
+    uint8_t motorId = sequence[nextStageId * 3 + 1]-1;
+    int32_t goalPos = sequence[nextStageId * 3 + 2];
+    int32_t accuracy = sequence[nextStageId * 3 + 3];
     Serial.printf("MotionSequence::next: Motor[%d(%d)] -> %d (+/-%d)\n", motors[motorId]->getId(), motorId+1, goalPos, accuracy);
     delay(1000);
     currentStage.update(nextStageId, motors[motorId], goalPos, accuracy);
@@ -66,7 +66,7 @@ void MotionSequence::printDebugInfo(String scopeName)
 {
     Serial.printf("[DEBUG | MS] %s Sequence[%d] -> motor[%d,%d,%d] | seq[%d,%d,%d,%d]\n",
     scopeName.c_str(),
-    (int)sequenceType(),
+    (int8_t)sequenceType(),
     motors[0]->getId(),
     motors[1]->getId(),
     motors[2]->getId(),
@@ -76,7 +76,7 @@ void MotionSequence::printDebugInfo(String scopeName)
     sequence[3]);
 }
 
-void Stage::update(int stageId, DXLMotor *_motor, int goalPosition, int accuracy)
+void Stage::update(int8_t stageId, DXLMotor *_motor, int32_t goalPosition, int32_t accuracy)
 {
     _stageId = stageId;
     motor = _motor;

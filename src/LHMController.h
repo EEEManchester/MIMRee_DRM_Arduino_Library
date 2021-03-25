@@ -86,9 +86,9 @@ private:
     HingeStatus hingeStatus;
     bool _isInMotionSequence;
     bool _motionSequenceStage;
-    LimitSwitchStatus getLimitSwitchStatus(int on_pin, int off_pin);
+    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin);
     OnOffStatus getPESensorStatus();
-    int digitalReadExt(int pin);
+    uint8_t digitalReadExt(uint8_t pin);
     MotionSequence currentMotionSequence;
     DXLMotor *motors[3];
 };

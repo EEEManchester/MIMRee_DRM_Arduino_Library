@@ -1,7 +1,7 @@
 #include "DxlMotor.h"
 using namespace ControlTableItem;
 
-DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, int motorId, DEBUG_SERIAL_CLASS &debugSerial)
+DXLMotor::DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId, DEBUG_SERIAL_CLASS &debugSerial)
     : dxl(dxl), id(motorId), debugSerial(debugSerial)
 {
 }
@@ -126,7 +126,7 @@ bool DXLMotor::setTorqueOn()
     return result;
 }
 
-bool DXLMotor::setVelocityProfile(int val)
+bool DXLMotor::setVelocityProfile(int32_t val)
 {
     if (val == lastSetVelocityProfile)
     {
@@ -141,7 +141,7 @@ bool DXLMotor::setVelocityProfile(int val)
     return result;
 }
 
-bool DXLMotor::setAccelerationProfile(int val)
+bool DXLMotor::setAccelerationProfile(int32_t val)
 {
     if (val == lastSetAccelerationProfile)
     {
@@ -228,9 +228,9 @@ void DXLMotor::setLED(bool setOn)
     }
 }
 
-void DXLMotor::flashLED(int times, unsigned long interval)
+void DXLMotor::flashLED(uint8_t times, unsigned long interval)
 {
-    for (int i = 0; i < times; i++)
+    for (uint8_t i = 0; i < times; i++)
     {
         setLED(true);
         delay(interval);

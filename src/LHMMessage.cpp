@@ -1,9 +1,9 @@
 #include "LHMMessage.h"
-int LHMMessage::readCommandIn()
+int8_t LHMMessage::readCommandIn()
 {
     String message = getSerialMessage();
     if (message == "")
-        return (int)CommandType::ERROR;
+        return (int8_t)CommandType::ERROR;
     return parseSerialMessage(message);
 }
 
@@ -22,7 +22,7 @@ String LHMMessage::getSerialMessage()
     return val;
 }
 
-int LHMMessage::parseSerialMessage(String message)
+int8_t LHMMessage::parseSerialMessage(String message)
 {
     if (!message.startsWith(String(SERIAL_PREFIX)) || !message.endsWith(String(SERIAL_PREFIX)))
     {
@@ -37,19 +37,18 @@ int LHMMessage::parseSerialMessage(String message)
         return val;
     }
     DEBUG_SERIAL.printf("LHMMessage::parseSerialMessage::Code not recognised: %s\n", message.c_str());
-    return (int)CommandType::ERROR;
+    return (int8_t)CommandType::ERROR;
 }
 
 void LHMMessage::sendCommandFeedback(CommandType cmd, bool isSuccessful)
 {
-    sendCommandFeedback((int)cmd, isSuccessful);
+    sendCommandFeedback((uint8_t)cmd, isSuccessful);
 }
 
-void LHMMessage::sendCommandFeedback(int cmd, bool isSuccessful)
+void LHMMessage::sendCommandFeedback(uint8_t cmd, bool isSuccessful)
 {
-    int result = isSuccessful ? 1 : 0;
     char message[32];
-    snprintf(message, sizeof(message), "$%c%i,%i$", SERIAL_MESSAGE_TYPE_INDICATOR_FBK, cmd, result);
+    snprintf(message, sizeof(message), "$%c%i,%i$", SERIAL_MESSAGE_TYPE_INDICATOR_FBK, cmd, isSuccessful);
     COM_SERIAL.println(message);
     DEBUG_SERIAL.printf("LHMMessage::sendCommandFeedback::%s\n", message);
 }

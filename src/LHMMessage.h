@@ -55,14 +55,13 @@ enum class ExecutionResult {
 class LHMMessage
 {
     public:
-    int readCommandIn();
+    int8_t readCommandIn();
     void sendCommandFeedback(CommandType cmd, bool isSuccessful);
-    void sendCommandFeedback(int cmd, bool isSuccessful);
+    void sendCommandFeedback(uint8_t cmd, bool isSuccessful);
 
     private:
     String getSerialMessage();
-    int parseSerialMessage(String message);
-    static bool cmdEqualTo(int currentCmd, CommandType compareToCmd);
+    int8_t parseSerialMessage(String message);
 };
 
 #endif

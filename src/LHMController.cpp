@@ -37,7 +37,7 @@ void LHMController::initiate()
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
 
-    int servoMin, servoMax;
+    uint8_t servoMin, servoMax;
     if (JETTISON_SERVO_VALUE_CLOSE < JETTISON_SERVO_VALUE_OPEN)
     {
         servoMin = JETTISON_SERVO_VALUE_CLOSE;
@@ -265,7 +265,7 @@ bool LHMController::stopHookMotor()
 
 bool LHMController::jettison()
 {
-    for (int i = 0; i < 10; i++)
+    for (uint8_t i = 0; i < 10; i++)
     {
         jettisonServo.write(JETTISON_SERVO_VALUE_OPEN);
         delay(100);
@@ -275,7 +275,7 @@ bool LHMController::jettison()
 
 bool LHMController::lockLHM()
 {
-    for (int i = 0; i < 10; i++)
+    for (uint8_t i = 0; i < 10; i++)
     {
         jettisonServo.write(JETTISON_SERVO_VALUE_CLOSE);
         delay(100);
@@ -293,7 +293,7 @@ LimitSwitchStatus LHMController::getTopLimitSwitchStatus()
     return getLimitSwitchStatus(PIN_LIMIT_SWITCH_CLOSED_TOP, PIN_LIMIT_SWITCH_OPEN_TOP);
 }
 
-LimitSwitchStatus LHMController::getLimitSwitchStatus(int closed_pin, int open_pin)
+LimitSwitchStatus LHMController::getLimitSwitchStatus(uint8_t closed_pin, uint8_t open_pin)
 {
     bool closed_pin_on = digitalReadExt(closed_pin) == HIGH;
     bool open_pin_on = digitalReadExt(open_pin) == HIGH;
@@ -320,9 +320,9 @@ OnOffStatus LHMController::getPESensorStatus()
     return OnOffStatus::OFF;
 }
 
-int LHMController::digitalReadExt(int pin)
+uint8_t LHMController::digitalReadExt(uint8_t pin)
 {
-    int state = digitalRead(pin);
+    uint8_t state = digitalRead(pin);
     DEBUG_SERIAL.printf("LHMController::digitalReadExt::pin[%d]=%d\n", pin, state);
     return state;
 }
