@@ -1,13 +1,10 @@
 #include <LHMController.h>
-
-#define DXL_SERIAL Serial3
-#define COM_SERIAL Serial
-#define DEBUG_SERIAL Serial
+#include <LHMDataTable.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 0;
 
-LHMController lhm(DXL_SERIAL, COM_SERIAL, DEBUG_SERIAL);
+LHMController lhm = LHMController();
 
 void setup()
 {

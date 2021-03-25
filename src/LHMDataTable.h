@@ -1,9 +1,10 @@
 #ifndef LHM_DATA_TABLE_H
 #define LHM_DATA_TABLE_H
 
-#define SERIAL_CLASS USBSerial
-#define SERIAL2_CLASS UARTClass
-#define SERIAL3_CLASS HardwareSerial
+#define DXL_SERIAL Serial3
+#define COM_SERIAL Serial
+#define DEBUG_SERIAL Serial
+#define DEBUG_SERIAL_CLASS USBSerial
 
 //Pin
 const int PIN_LIMIT_SWITCH_CLOSED_TOP = 13;      //blue

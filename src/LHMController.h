@@ -53,7 +53,7 @@ enum class LimitSwitchStatus
 class LHMController
 {
 public:
-    LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial);
+    LHMController();
     void initiate();
     HookStatus getHookStatus();
     HookStatus getHookMotionStatus() { return hookMotionStatus; }

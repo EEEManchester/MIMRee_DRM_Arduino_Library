@@ -1,11 +1,11 @@
 #include "LHMController.h"
 
-LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial)
-    : dxl(Dynamixel2Arduino(servoSerial, PIN_DXL_DIR)),
-      lhmMessage(comSerial, debugSerial),
-      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, debugSerial)),
-      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, debugSerial)),
-      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, debugSerial))
+LHMController::LHMController()
+    : dxl(Dynamixel2Arduino(DXL_SERIAL, PIN_DXL_DIR)),
+      lhmMessage(LHMMessage()),
+      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, DEBUG_SERIAL)),
+      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, DEBUG_SERIAL)),
+      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, DEBUG_SERIAL))
 {    
     motors[0] = &hookMotor;
     if (MOTOR_ID_HINGE_PITCH == 2)
@@ -121,7 +121,7 @@ HookStatus LHMController::getHookStatus()
 {
     LimitSwitchStatus top_ls = getTopLimitSwitchStatus();
     LimitSwitchStatus bot_ls = getBotLimitSwitchStatus();
-    LHMController::lhmMessage.debugSerial.printf("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
+    DEBUG_SERIAL.printf("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
     if (top_ls == LimitSwitchStatus::ERROR || bot_ls == LimitSwitchStatus::ERROR)
         return HookStatus::ERROR;
     if (top_ls == LimitSwitchStatus::CLOSED && bot_ls == LimitSwitchStatus::OPEN)
@@ -160,7 +160,7 @@ bool LHMController::setSwingReductionMode()
     result = result && LHMController::hingeMotorRoll.setOperatingMode(OP_CURRENT);
     result = result && LHMController::hingeMotorRoll.setTorqueOn();
     result = result && LHMController::hingeMotorRoll.setGoalCurrent(0);
-    LHMController::lhmMessage.debugSerial.printf("LHMController::setSwingReductionMode: %s\n", result ? "Successful" : "Failed");
+    DEBUG_SERIAL.printf("LHMController::setSwingReductionMode: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_SWING_REDUCTION, result);
     return result;
 }
@@ -185,7 +185,8 @@ MotionSequenceStatusType LHMController::getMotionSequenceStatus()
     return currentMotionSequence.status();
 }
 
-int8_t LHMController::nextMotionSequence() {
+int8_t LHMController::nextMotionSequence()
+{
     if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
     {
         return -1;
@@ -197,7 +198,7 @@ bool LHMController::setTakeoffMode()
 {
     bool result = LHMController::hingeMotorPitch.setTorqueOff();
     result = result && LHMController::hingeMotorRoll.setTorqueOff();
-    LHMController::lhmMessage.debugSerial.printf("LHMController::setTakeoffMode: %s\n", result ? "Successful" : "Failed");
+    DEBUG_SERIAL.printf("LHMController::setTakeoffMode: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_TAKE_OFF, result);
     return result;
 }
@@ -206,7 +207,7 @@ bool LHMController::stopHingeMotor()
 {
     bool result = LHMController::hingeMotorPitch.setTorqueOff();
     result = result && LHMController::hingeMotorRoll.setTorqueOff();
-    LHMController::lhmMessage.debugSerial.printf("LHMController::stopHingeMotor: %s\n", result ? "Successful" : "Failed");
+    DEBUG_SERIAL.printf("LHMController::stopHingeMotor: %s\n", result ? "Successful" : "Failed");
     LHMController::lhmMessage.sendCommandFeedback(CommandType::HINGE_POWER_OFF, result);
     return result;
 }
@@ -305,13 +306,13 @@ LimitSwitchStatus LHMController::getLimitSwitchStatus(int closed_pin, int open_p
         status = LimitSwitchStatus::ERROR;
     else
         status = LimitSwitchStatus::OFFLINE;
-    LHMController::lhmMessage.debugSerial.printf("LHMController::getLimitSwitchStatus::pin[%d & %d] -> %d\n", closed_pin, open_pin, (int)status);
+    DEBUG_SERIAL.printf("LHMController::getLimitSwitchStatus::pin[%d & %d] -> %d\n", closed_pin, open_pin, (int)status);
     return status;
 }
 
 OnOffStatus LHMController::getPESensorStatus()
 {
-    LHMController::lhmMessage.debugSerial.println("LHMController::getPESensorStatus");
+    DEBUG_SERIAL.println("LHMController::getPESensorStatus");
     if (digitalReadExt(PIN_PE_SENSOR) == HIGH)
     {
         return OnOffStatus::ON;
@@ -322,6 +323,6 @@ OnOffStatus LHMController::getPESensorStatus()
 int LHMController::digitalReadExt(int pin)
 {
     int state = digitalRead(pin);
-    LHMController::lhmMessage.debugSerial.printf("LHMController::digitalReadExt::pin[%d]=%d\n", pin, state);
+    DEBUG_SERIAL.printf("LHMController::digitalReadExt::pin[%d]=%d\n", pin, state);
     return state;
 }
