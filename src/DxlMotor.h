@@ -15,6 +15,8 @@ public:
     float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
     float getLastSetGoalPosition() { return lastSetGoalPosition; };
     OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; };
+    int getLastSetVelocityProfile() { return lastSetVelocityProfile; }
+    int getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
     bool isInErrorStatus() { return errorStatus; };
 
     bool isOnline();
@@ -23,8 +25,8 @@ public:
     float getCurrentPosition();
     float getCurrentVelocity();
     bool isMoving();
-    bool isAtPosition(float position, float positionTolerance=-1);
-    bool isAtGoalPosition(float positionTolerance=-1);
+    bool isAtPosition(float position, float positionTolerance = -1);
+    bool isAtGoalPosition(float positionTolerance = -1);
 
     bool setOperatingMode(OperatingMode op);
     bool setTorqueOff();
@@ -36,7 +38,7 @@ public:
     bool setAccelerationProfile(int val);
 
     void setLED(bool setOn);
-    void flashLED(int times, unsigned long interval=50);
+    void flashLED(int times, unsigned long interval = 50);
 
 private:
     Dynamixel2Arduino &dxl;
@@ -46,22 +48,22 @@ private:
     bool setGoalVelocityRaw(float velocity);
     bool setGoalCurrentRaw(float current);
     bool setGoalPositionRaw(float position);
-    OperatingMode lastSetOperatingMode;
-    float lastSetGoalVelocity;
-    float lastSetGoalCurrent;
-    float lastSetGoalPosition;
-    int lastSetVelocityProfile;
-    int lastSetAccelerationProfile;
+    OperatingMode lastSetOperatingMode = UNKNOWN_OP;
+    float lastSetGoalVelocity = -999;
+    float lastSetGoalCurrent = -999;
+    float lastSetGoalPosition = -999;
+    int lastSetVelocityProfile = -999;
+    int lastSetAccelerationProfile = -999;
     void resetOPRelatedParamRecords();
     const int MAX_DXL_PROTOCOL_ATTEMPTS = 5;
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)());
-    template<typename T>
+    template <typename T>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T), T arg);
-    template<typename T1,typename T2>
+    template <typename T1, typename T2>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2), T1 arg, T2 arg1);
-    template<typename T1,typename T2,typename T3>
+    template <typename T1, typename T2, typename T3>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T1 arg, T2 arg1, T3 arg2);
-    template<typename T1,typename T2,typename T3,typename T4>
+    template <typename T1, typename T2, typename T3, typename T4>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3, T4), T1 arg, T2 arg1, T3 arg2, T4 arg3);
 };
 

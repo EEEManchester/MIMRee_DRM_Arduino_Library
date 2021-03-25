@@ -1,7 +1,7 @@
 #include <LHMController.h>
 
-#define DXL_SERIAL   Serial3
-#define COM_SERIAL   Serial
+#define DXL_SERIAL Serial3
+#define COM_SERIAL Serial
 #define DEBUG_SERIAL Serial
 
 const int STATUS_REPORT_INTERVAL = 1000;
@@ -9,7 +9,8 @@ const int COMMAND_IN_CHECK_INTERVAL = 0;
 
 LHMController lhm(DXL_SERIAL, COM_SERIAL, DEBUG_SERIAL);
 
-void setup() {
+void setup()
+{
   DEBUG_SERIAL.begin(9600);
   lhm.initiate();
   // pulseLEDSequantial();
@@ -22,11 +23,16 @@ HingeStatus hgStatus;
 HookStatus hkStatus;
 bool hingeInTransition = false;
 
-void loop() {
+void loop()
+{
   if ((int)millis() - prevStatusReportTime > STATUS_REPORT_INTERVAL)
   {
     prevStatusReportTime = millis();
     reportStatus();
+    if (hingeInTransition)
+    {
+      trackHingeTransition();
+    }
   }
   if ((int)millis() - prevCommandInCheckTime > COMMAND_IN_CHECK_INTERVAL)
   {
@@ -38,11 +44,6 @@ void loop() {
   {
     if (hkStatus != HookStatus::OPENNING || hkStatus != HookStatus::OPENNING)
       lhm.stopHookMotor();
-  }
-
-  if (hingeInTransition)
-  {
-    trackHingeTransition();
   }
 }
 
@@ -98,6 +99,8 @@ void checkCommandIn()
 void trackHingeTransition()
 {
   MotionSequenceStatusType status = lhm.getMotionSequenceStatus();
+  DEBUG_SERIAL.printf("MotionSequenceStatus: %d\n", (int)status);
+
   switch (status)
   {
     case MotionSequenceStatusType::COMPLETED:
@@ -111,10 +114,12 @@ void trackHingeTransition()
     case MotionSequenceStatusType::ERROR:
     case MotionSequenceStatusType::UNKNOWN:
       hingeInTransition = false;
+      break;
   }
 }
 
-void pulseLEDSequantial() {
+void pulseLEDSequantial()
+{
   lhm.hingeMotorPitch.flashLED(10, 200);
   lhm.hingeMotorRoll.flashLED(10, 200);
   lhm.hookMotor.flashLED(10, 200);

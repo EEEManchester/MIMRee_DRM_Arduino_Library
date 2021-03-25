@@ -21,8 +21,8 @@ const char SERIAL_MESSAGE_TYPE_INDICATOR_STATUS = 'S';
 
 //Dxl servo firmware settings
 const int MOTOR_ID_HOOK = 1;
-const int MOTOR_ID_HINGE_PITCH = 3;
-const int MOTOR_ID_HINGE_ROLL = 2;
+const int MOTOR_ID_HINGE_PITCH = 2;
+const int MOTOR_ID_HINGE_ROLL = 3;
 const float DXL_PROTOCOL_VERSION = 2.0;
 const unsigned long DXL_BAUD_RATE = 1000000;
 
@@ -39,8 +39,8 @@ const float MOVING_THRESHOLD_VELOCITY = 1;
 const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
 
 //Motion sequence
-// {M_1_servo_id, M_1_pos, M_1_ACC, M_2_servo_id, M_2_pos, M_2_ACC, etc...}
-const int MOTION_SEQ_LANDING[] = {MOTOR_ID_HINGE_ROLL, HINGE_POS_VER, 20, MOTOR_ID_HINGE_PITCH, 1024, 20, MOTOR_ID_HINGE_ROLL, 1024, 20};
+// {Motion_count, M_1_servo_id, M_1_pos, M_1_ACC, M_2_servo_id, M_2_pos, M_2_ACC, etc...}
+const int MOTION_SEQ_LANDING[] = {3, MOTOR_ID_HINGE_ROLL, HINGE_POS_VER, 100, MOTOR_ID_HINGE_PITCH, 1024, 100, MOTOR_ID_HINGE_ROLL, 1024, 50};
 
 //OpenCM 9.04 + 485 EXP specific
 const int PIN_DXL_DIR = 22;

@@ -89,7 +89,8 @@ private:
     LimitSwitchStatus getLimitSwitchStatus(int on_pin, int off_pin);
     OnOffStatus getPESensorStatus();
     int digitalReadExt(int pin);
-    MotionSequence *currentMotionSequence;
+    MotionSequence currentMotionSequence;
+    DXLMotor *motors[3];
 };
 
 #endif

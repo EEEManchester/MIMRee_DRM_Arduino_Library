@@ -5,16 +5,35 @@
 #include <Arduino.h>
 #include "LHMDataTable.h"
 
+
+
+enum class MotionSequenceType
+{
+    UNKNOWN = -1,
+    LANDING
+};
+
+enum class MotionSequenceStatusType
+{
+    UNKNOWN = -2,
+    ERROR,
+    WAITING = 0,
+    BUSY,
+    STAGE_COMPLETED,
+    COMPLETED
+};
+
 class Stage
 {
 public:
-    Stage() = default;
     int stageId() { return _stageId; }
+    int motorId() { return motor->getId(); }
     int goalPosition() { return _goalPosition; }
     int accuracy() { return _accuracy; }
+    bool started() { return _started; }
 
     void update(int stageId, DXLMotor *motor, int goalPosition, int accuracy);
-    
+
     /**
      * @return -1: error (position goal is not the same as stage goal)
      *          0: stage not completed
@@ -36,33 +55,22 @@ public:
      */
     int8_t execute();
 
+    void printDebugInfo(String scopeName="");
+
 private:
-    bool started;
+    bool _started;
     int _stageId = -1;
     DXLMotor *motor = nullptr;
     int _goalPosition = -1;
     int _accuracy = -1;
 };
 
-enum class MotionSequenceType
-{
-    LANDING = 0
-};
-
-enum class MotionSequenceStatusType
-{
-    UNKNOWN = -2,
-    ERROR,
-    BUSY,
-    STAGE_COMPLETED,
-    COMPLETED
-};
-
 class MotionSequence
 {
 public:
-    MotionSequence(MotionSequenceType type, DXLMotor motors[], const int sequence[]);
-    MotionSequenceType sequenceType() {return _sequenceType;}
+    MotionSequence(){};
+    MotionSequence(MotionSequenceType type, DXLMotor *motors[], const int sequence[]);
+    MotionSequenceType sequenceType() { return _sequenceType; }
     int currentStageId() { return currentStage.stageId(); }
     MotionSequenceStatusType status();
 
@@ -73,12 +81,12 @@ public:
      *          2: sequence reaches end
      */
     int8_t next();
+    void printDebugInfo(String scopeName="");
 
 private:
-    MotionSequenceType _sequenceType;
-    DXLMotor *motors;
+    MotionSequenceType _sequenceType = MotionSequenceType::UNKNOWN;
+    DXLMotor **motors;
     const int *sequence;
     Stage currentStage;
-    int stageCount;
 };
 #endif

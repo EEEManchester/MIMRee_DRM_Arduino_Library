@@ -4,9 +4,20 @@ LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comS
     : dxl(Dynamixel2Arduino(servoSerial, PIN_DXL_DIR)),
       lhmMessage(comSerial, debugSerial),
       hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, lhmMessage)),
-      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, lhmMessage)),
-      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, lhmMessage))
-{
+      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, lhmMessage)),
+      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, lhmMessage))
+{    
+    motors[0] = &hookMotor;
+    if (MOTOR_ID_HINGE_PITCH == 2)
+    {
+        motors[1] = &hingeMotorPitch;
+        motors[2] = &hingeMotorRoll;
+    }
+    else
+    {
+        motors[2] = &hingeMotorPitch;
+        motors[1] = &hingeMotorRoll;
+    }
 }
 
 void LHMController::initiate()
@@ -42,37 +53,48 @@ void LHMController::initiate()
 
 HingeStatus LHMController::getHingeStatus()
 {
+    Serial.printf("LHMController::getHingeStatus: hingeMotorPitch -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n", 
+    (int)hingeMotorPitch.getLastSetOperatingMode(),
+    hingeMotorPitch.getLastSetGoalPosition(),
+    hingeMotorPitch.getLastSetGoalVelocity(),
+    hingeMotorPitch.getLastSetVelocityProfile(),
+    hingeMotorPitch.getLastSetAccelerationProfile());
+    Serial.printf("LHMController::getHingeStatus: hingeMotorRoll -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n", 
+    (int)hingeMotorRoll.getLastSetOperatingMode(),
+    hingeMotorRoll.getLastSetGoalPosition(),
+    hingeMotorRoll.getLastSetGoalVelocity(),
+    hingeMotorRoll.getLastSetVelocityProfile(),
+    hingeMotorRoll.getLastSetAccelerationProfile());
     if (!LHMController::hingeMotorPitch.isOnline() || !LHMController::hingeMotorRoll.isOnline())
     {
         return HingeStatus::OFFLINE;
     }
-    bool torque_x = LHMController::hingeMotorPitch.isTorqueOn();
-    bool torque_y = LHMController::hingeMotorRoll.isTorqueOn();
-    if (!torque_x)
+    
+    bool torquePitch = LHMController::hingeMotorPitch.isTorqueOn();
+    bool torqueRoll = LHMController::hingeMotorRoll.isTorqueOn();
+    if (!torquePitch)
     {
-        if (!torque_y)
+        if (!torqueRoll)
             return HingeStatus::TAKEOFF_MODE;
         else
             return HingeStatus::ERROR;
     }
-    OperatingMode op_x = LHMController::hingeMotorPitch.getLastSetOperatingMode();
-    OperatingMode op_y = LHMController::hingeMotorRoll.getLastSetOperatingMode();
-    if (op_x == OP_CURRENT)
+    OperatingMode opPitch = LHMController::hingeMotorPitch.getLastSetOperatingMode();
+    OperatingMode opRoll = LHMController::hingeMotorRoll.getLastSetOperatingMode();
+    if (opPitch == OP_CURRENT)
     {
-        if (op_y == OP_CURRENT)
+        if (opRoll == OP_CURRENT)
             return HingeStatus::SWING_REDUCTION;
         else
             return HingeStatus::ERROR;
     }
-    if (op_x == OP_POSITION)
+    if (opRoll == OP_POSITION)
     {
-        if (!op_y == OP_POSITION)
+        if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
             return HingeStatus::ERROR;
-        if (currentMotionSequence == nullptr)
-            return HingeStatus::ERROR;
-        if (currentMotionSequence->sequenceType() == MotionSequenceType::LANDING)
+        if (currentMotionSequence.sequenceType() == MotionSequenceType::LANDING)
         {
-            MotionSequenceStatusType status = currentMotionSequence->status();
+            MotionSequenceStatusType status = currentMotionSequence.status();
             if (status == MotionSequenceStatusType::COMPLETED)
             {
                 return HingeStatus::LANDING_POSITION_READY;
@@ -145,18 +167,8 @@ bool LHMController::setSwingReductionMode()
 
 bool LHMController::setLandingPosition()
 {
-    DXLMotor *motors;
-    if (MOTOR_ID_HINGE_PITCH == 2)
-    {
-        DXLMotor motors[3] = {hookMotor, hingeMotorPitch, hingeMotorRoll};
-    }
-    else
-    {
-        DXLMotor motors[3] = {hookMotor, hingeMotorPitch, hingeMotorRoll};
-    }
-    MotionSequence ms = MotionSequence(MotionSequenceType::LANDING, motors, MOTION_SEQ_LANDING);
-    currentMotionSequence = &ms;
-    return currentMotionSequence->next();
+    currentMotionSequence = MotionSequence(MotionSequenceType::LANDING, motors, MOTION_SEQ_LANDING);
+    return currentMotionSequence.next() == 1;
 }
 
 bool LHMController::isAtLandingPosition()
@@ -166,19 +178,19 @@ bool LHMController::isAtLandingPosition()
 
 MotionSequenceStatusType LHMController::getMotionSequenceStatus()
 {
-    if (currentMotionSequence == nullptr)
+    if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
     {
         return MotionSequenceStatusType::UNKNOWN;
     }
-    return currentMotionSequence->status();
+    return currentMotionSequence.status();
 }
 
 int8_t LHMController::nextMotionSequence() {
-    if (currentMotionSequence == nullptr)
+    if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
     {
         return -1;
     }
-    return currentMotionSequence->next();
+    return currentMotionSequence.next();
 }
 
 bool LHMController::setTakeoffMode()

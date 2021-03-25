@@ -122,7 +122,7 @@ bool DXLMotor::setTorqueOn()
     {
         errorStatus = true;
     }
-    lhmMessage.debugSerial.printf("DXLMotor::setTorqueOn:: id[%d] = %d\n", id, result);
+    Serial.printf("DXLMotor::setTorqueOn:: id[%d] = %d\n", id, result);
     return result;
 }
 
@@ -133,8 +133,8 @@ bool DXLMotor::setVelocityProfile(int val)
         return true;
     }
     bool result = repeatCOM<uint8_t,uint8_t,int32_t,uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_VELOCITY, id, val, 100);
-    lhmMessage.debugSerial.printf("DXLMotor::setVelocityProfile:: id[%d] = %d\n", id, result);
-    lastSetVelocityProfile = val;
+    Serial.printf("DXLMotor::setVelocityProfile:: id[%d] = %d\n", id, result);
+    if (result) {lastSetVelocityProfile = val;}
     return result;
 }
 
@@ -146,7 +146,7 @@ bool DXLMotor::setAccelerationProfile(int val)
     }
     bool result = repeatCOM<uint8_t,uint8_t,int32_t,uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_ACCELERATION, id, val, 100);
     lhmMessage.debugSerial.printf("DXLMotor::setAccelerationProfile:: id[%d] = %d\n", id, result);
-    lastSetAccelerationProfile = val;
+    if (result) {lastSetAccelerationProfile = val;}
     return result;
 }
 
@@ -206,7 +206,7 @@ bool DXLMotor::setGoalPosition(float position)
     {
         errorStatus = true;
     }
-    lhmMessage.debugSerial.printf("DXLMotor::setGoalPosition:: id[%d] -> [%f] = %d\n", id, position, result);
+    lhmMessage.debugSerial.printf("DXLMotor::setGoalPosition:: id[%d] -> [%f] = %d (record updated: %f)\n", id, position, result, lastSetGoalPosition);
     return result;
 }
 
