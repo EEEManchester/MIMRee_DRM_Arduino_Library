@@ -3,9 +3,9 @@
 LHMController::LHMController(HardwareSerial &servoSerial, COM_SERIAL_CLASS &comSerial, DEBUG_SERIAL_CLASS &debugSerial)
     : dxl(Dynamixel2Arduino(servoSerial, PIN_DXL_DIR)),
       lhmMessage(comSerial, debugSerial),
-      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, lhmMessage)),
-      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, lhmMessage)),
-      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, lhmMessage))
+      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, debugSerial)),
+      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, debugSerial)),
+      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, debugSerial))
 {    
     motors[0] = &hookMotor;
     if (MOTOR_ID_HINGE_PITCH == 2)
