@@ -44,10 +44,10 @@ const uint16_t MOTION_SEQ_LANDING[] = {3, MOTOR_ID_HINGE_ROLL, HINGE_POS_VERTICA
 //OpenCM 9.04 + 485 EXP specific
 const uint8_t PIN_DXL_DIR = 22;
 const uint8_t PIN_LED_0 = 14;
-const uint8_t PIN_LED_1 = 18;
-const uint8_t PIN_LED_2 = 19;
-const uint8_t PIN_LED_3 = 20;
-const uint8_t PIN_BUTTON_1 = 16;
+const uint8_t PIN_LED_RED = 18;
+const uint8_t PIN_LED_GREEN = 19;
+const uint8_t PIN_LED_BLUE = 20;
+const uint8_t PIN_BUTTON_JETTISON = 16;
 const uint8_t PIN_BUTTON_2 = 17;
 
 //Jettison

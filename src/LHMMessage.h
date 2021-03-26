@@ -8,10 +8,7 @@
 
 #include <Arduino.h>
 #include <USBSerial.h>
-// #include <PixhawkArduinoMAVLink.h>
 #include "LHMDataTable.h"
-// #include <stdio.h>
-// #include <stdarg.h>
 
 enum class CommandType {
     ERROR = -1,

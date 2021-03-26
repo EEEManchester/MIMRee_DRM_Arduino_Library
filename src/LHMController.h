@@ -11,6 +11,7 @@
 #include "LHMMessage.h"
 #include "DxlMotor.h"
 #include "MotionSequence.h"
+#include "utilities/LongShortPressButton.h"
 
 enum class HookStatus
 {
@@ -78,6 +79,7 @@ public:
     DXLMotor hingeMotorPitch;
     DXLMotor hingeMotorRoll;
     LHMMessage lhmMessage;
+    LongShortPressButton btnJet;
 
 private:
     Dynamixel2Arduino dxl;
@@ -86,7 +88,7 @@ private:
     HingeStatus hingeStatus;
     bool _isInMotionSequence;
     bool _motionSequenceStage;
-    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin);
+    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin, bool offlineRetry=true);
     OnOffStatus getPESensorStatus();
     uint8_t digitalReadExt(uint8_t pin);
     MotionSequence currentMotionSequence;

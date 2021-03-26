@@ -46,7 +46,7 @@ float DXLMotor::getCurrentVelocity()
 
 bool DXLMotor::isMoving()
 {
-    int32_t result = dxl.readControlTableItem(MOVING, id);
+    int32_t result = repeatCOM<uint8_t, uint8_t, uint32_t>(&Dynamixel2Arduino::readControlTableItem, MOVING, id, 100U);
     debugSerial.printf("DXLMotor::isMoving:: id[%d] = %d\n", id, result);
     return result == 1;
 }
@@ -60,7 +60,7 @@ bool DXLMotor::isAtPosition(float position, float positionTolerance)
 {
     if (positionTolerance < 0)
     {
-        positionTolerance = 13;
+        positionTolerance = 5;
     }
     float diff = abs(position - getCurrentPosition());
     bool result = diff < positionTolerance;
@@ -310,6 +310,19 @@ bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3, T4), T1 
     while (!result)
     {
         result = ((dxl).*(dxlFunc))(arg, arg1, arg2, arg3);
+        count++;
+    }
+    return result;
+}
+
+template <typename T1, typename T2, typename T3>
+int32_t DXLMotor::repeatCOM(int32_t (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T1 arg, T2 arg1, T3 arg2)
+{
+    int count = 0;
+    int32_t result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
+    while (result==0 && count < MAX_DXL_PROTOCOL_ATTEMPTS)
+    {
+        result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
         count++;
     }
     return result;

@@ -27,8 +27,8 @@ public:
     float getCurrentPosition();
     float getCurrentVelocity();
     bool isMoving();
-    bool isAtPosition(float position, float positionTolerance = -1);
-    bool isAtGoalPosition(float positionTolerance = -1);
+    bool isAtPosition(float position, float positionTolerance = 5);
+    bool isAtGoalPosition(float positionTolerance = 5);
 
     bool setOperatingMode(OperatingMode op);
     bool setTorqueOff();
@@ -71,6 +71,9 @@ private:
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T1 arg, T2 arg1, T3 arg2);
     template <typename T1, typename T2, typename T3, typename T4>
     bool repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3, T4), T1 arg, T2 arg1, T3 arg2, T4 arg3);
+
+    template <typename T1, typename T2, typename T3>
+    int32_t repeatCOM(int32_t (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T1 arg, T2 arg1, T3 arg2);
 };
 
 #endif

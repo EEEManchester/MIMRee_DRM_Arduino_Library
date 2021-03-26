@@ -18,6 +18,8 @@ long prevStatusReportTime = 0;
 long prevCommandInCheckTime = 0;
 HingeStatus hgStatus;
 HookStatus hkStatus;
+long hookMotionStopDelay = 100;
+long hookMotionStartTime = 0;
 bool hingeInTransition = false;
 
 void loop()
@@ -36,11 +38,32 @@ void loop()
     prevCommandInCheckTime = millis();
     checkCommandIn();
   }
-  HookStatus hkMotion = lhm.getHookMotionStatus();
-  if (hkMotion == HookStatus::OPENNING || hkMotion == HookStatus::CLOSING)
+
+  if (hookMotionStartTime > 0 && ((int)millis() - hookMotionStartTime) > hookMotionStopDelay)
   {
-    if (hkStatus != HookStatus::OPENNING || hkStatus != HookStatus::OPENNING)
-      lhm.stopHookMotor();
+    HookStatus hkMotion = lhm.getHookMotionStatus();
+    if (hkMotion == HookStatus::OPENNING || hkMotion == HookStatus::CLOSING)
+    {
+      hkStatus = lhm.getHookStatus();
+      DEBUG_SERIAL.printf("Status_rapid: Hook=%d\n", (int)hkStatus);
+      if (hkStatus != HookStatus::OPENNING && hkStatus != HookStatus::CLOSING)
+        if (lhm.stopHookMotor())
+        {
+          hookMotionStartTime = 0;
+        }
+    }
+  }
+
+  LSButtonState btnJetState = lhm.btnJet.getState();
+  if (btnJetState == LSButtonState::SHORT_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board button pressed, requesting locking LHM.");
+    lhm.lockLHM();
+  }
+  else if (btnJetState == LSButtonState::LONG_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board button pressed, requesting releasing LHM.");
+    lhm.jettison();
   }
 }
 
@@ -48,6 +71,22 @@ void reportStatus()
 {
   hgStatus = lhm.getHingeStatus();
   hkStatus = lhm.getHookStatus();
+  if (hgStatus == HingeStatus::ERROR || hgStatus == HingeStatus::OFFLINE || hgStatus == HingeStatus::UNKNOWN)
+  {
+    digitalWrite(PIN_LED_BLUE, HIGH);
+  }
+  else
+  {
+    digitalWrite(PIN_LED_BLUE, LOW);
+  }
+  if (hkStatus == HookStatus::ERROR || hkStatus == HookStatus::OFFLINE || hkStatus == HookStatus::UNKNOWN)
+  {
+    digitalWrite(PIN_LED_GREEN, HIGH);
+  }
+  else
+  {
+    digitalWrite(PIN_LED_GREEN, LOW);
+  }
   bool egStatus = lhm.isEngaged();
   DEBUG_SERIAL.printf("Status: Hinge=%d | Hook=%d | Engaged=%d\n", (int)hgStatus, (int)hkStatus, (int)egStatus);
   COM_SERIAL.printf("$S%d,%d,%d$\n", (int)hgStatus, (int)hkStatus, (int)egStatus);
@@ -86,9 +125,11 @@ void checkCommandIn()
     break;
   case (int)CommandType::HOOK_CLOSE:
     lhm.closeHook();
+    hookMotionStartTime = millis();
     break;
   case (int)CommandType::HOOK_OPEN:
     lhm.openHook();
+    hookMotionStartTime = millis();
     break;
   }
 }
@@ -100,18 +141,18 @@ void trackHingeTransition()
 
   switch (status)
   {
-    case MotionSequenceStatusType::COMPLETED:
-      hingeInTransition = false;
-      break;
-    case MotionSequenceStatusType::STAGE_COMPLETED:
-      lhm.nextMotionSequence();
-      break;
-    case MotionSequenceStatusType::BUSY:
-      break;
-    case MotionSequenceStatusType::ERROR:
-    case MotionSequenceStatusType::UNKNOWN:
-      hingeInTransition = false;
-      break;
+  case MotionSequenceStatusType::COMPLETED:
+    hingeInTransition = false;
+    break;
+  case MotionSequenceStatusType::STAGE_COMPLETED:
+    lhm.nextMotionSequence();
+    break;
+  case MotionSequenceStatusType::BUSY:
+    break;
+  case MotionSequenceStatusType::ERROR:
+  case MotionSequenceStatusType::UNKNOWN:
+    hingeInTransition = false;
+    break;
   }
 }
 
