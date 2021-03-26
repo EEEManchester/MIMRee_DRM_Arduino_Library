@@ -101,6 +101,9 @@ bool DXLMotor::setTorqueOff()
     {
         errorStatus = false;
         setLED(false);
+        lastSetGoalPosition = -999;
+        lastSetGoalVelocity = -999;
+        lastSetGoalCurrent = -999;
     }
     else
     {
@@ -239,6 +242,13 @@ void DXLMotor::flashLED(uint8_t times, unsigned long interval)
     }
 }
 
+bool DXLMotor::setVelocityLimit(int32_t val)
+{
+    bool result = repeatCOM<uint8_t, uint8_t, int32_t, uint32_t>(&Dynamixel2Arduino::writeControlTableItem, VELOCITY_LIMIT, id, val, 100);
+    debugSerial.printf("DXLMotor::setVelocityLimit:: id[%d] = %d\n", id, result);
+    return result;
+}
+
 void DXLMotor::resetOPRelatedParamRecords()
 {
     lastSetAccelerationProfile = -999;
@@ -320,7 +330,7 @@ int32_t DXLMotor::repeatCOM(int32_t (Dynamixel2Arduino::*dxlFunc)(T1, T2, T3), T
 {
     int count = 0;
     int32_t result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
-    while (result==0 && count < MAX_DXL_PROTOCOL_ATTEMPTS)
+    while (result == 0 && count < MAX_DXL_PROTOCOL_ATTEMPTS)
     {
         result = ((dxl).*(dxlFunc))(arg, arg1, arg2);
         count++;

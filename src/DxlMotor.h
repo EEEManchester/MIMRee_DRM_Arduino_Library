@@ -12,6 +12,7 @@ class DXLMotor
 {
 public:
     DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId, DEBUG_SERIAL_CLASS &debugSerial);
+    Dynamixel2Arduino &dxl;
     uint8_t getId() { return id; };
     float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
     float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
@@ -38,6 +39,7 @@ public:
     bool setGoalPosition(float position);
     bool setVelocityProfile(int32_t val);
     bool setAccelerationProfile(int32_t val);
+    bool setVelocityLimit(int32_t val);
 
     void setLED(bool setOn);
     void flashLED(uint8_t times, unsigned long interval = 50);
@@ -45,7 +47,6 @@ public:
 private:
     const uint8_t MAX_DXL_PROTOCOL_ATTEMPTS = 5;
 
-    Dynamixel2Arduino &dxl;
     DEBUG_SERIAL_CLASS &debugSerial;
     uint8_t id;
     bool errorStatus;
