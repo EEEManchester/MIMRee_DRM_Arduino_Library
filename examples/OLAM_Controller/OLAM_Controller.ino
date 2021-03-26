@@ -19,8 +19,8 @@ void setup()
   // pulseLEDSequantial();
   DEBUG_SERIAL.println("Initialized.");
 
-  pinMode(16, INPUT);
-  pinMode(17, INPUT);
+  pinMode(16, INPUT_PULLDOWN);
+  pinMode(17, INPUT_PULLDOWN);
   ltcCommand = defaultltcCommand;
 }
 
@@ -30,21 +30,27 @@ void loop()
   {
     prevStatusReportTime = millis();
     LineStatusType ls = olam.ltController.lineStatus();
-    DEBUG_SERIAL.pringf("Line status is %d\n", (int)ls);
+    DEBUG_SERIAL.printf("OLAM motor ltc module id: %d\n", olam.ltController.motorId());
+    olam.ltcMotor.isOnline();
+    DEBUG_SERIAL.printf("Line status is %d\n", (int)ls);
   }
   if ((int)millis() - prevCommandInCheckTime > COMMAND_IN_CHECK_INTERVAL)
   {
     prevCommandInCheckTime = millis();
     // checkCommandIn();
   }
-  // checkCommandIn();
-  // olam.ltController.run(ltcCommand);
+  checkCommandIn();
+  olam.ltController.run(ltcCommand);
 }
 
 void checkCommandIn()
 {
-  if (digitalRead(16) == HIGH)
+  LSButtonState homeBtn=olam.homeButton.getState();
+  LSButtonState engBtn=olam.engagementButton.getState();
+  // Serial.printf("BTN: %d, %d\n", homeBtn, engBtn);
+  if (engBtn==LSButtonState::SHORT_PRESSED)
   {
+    DEBUG_SERIAL.println("Onboard button 16 pressed. Prepare for engagement ");
     if (prevltcCommand == TC_PREPARE_FOR_ENGAGEMENT)
     {
       ltcCommand = defaultltcCommand;
@@ -61,8 +67,9 @@ void checkCommandIn()
     }
     return;
   }
-  if (digitalRead(17) == HIGH)
+  if (homeBtn==LSButtonState::SHORT_PRESSED)
   {
+    DEBUG_SERIAL.println("Onboard button 17 pressed. Go to home");
     if (prevltcCommand == TC_HOME)
     {
       ltcCommand = defaultltcCommand;

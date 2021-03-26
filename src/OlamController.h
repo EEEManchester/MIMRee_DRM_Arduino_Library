@@ -6,7 +6,7 @@
 #include "DxlMotor.h"
 #include "OlamDataTable.h"
 #include "LineTensionController.h"
-
+#include "utilities/LongShortPressButton.h"
 class OLAMController
 {
 public:
@@ -14,6 +14,8 @@ public:
     DXLMotor ltcMotor;
     LineTensionController ltController;
     void initiate();
+    LongShortPressButton homeButton;
+    LongShortPressButton engagementButton;
 
 private:
     Dynamixel2Arduino dxl;

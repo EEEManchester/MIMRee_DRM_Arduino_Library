@@ -35,7 +35,7 @@ enum LineTensionControlModeType
 class LineTensionController
 {
 public:
-    LineTensionController(DXLMotor ltcMotor);
+    LineTensionController(DXLMotor &ltcMotor);
     LineTensionControlModeType mode() { return _mode; }
     bool run(LineTensionControlCommandType command);
 
@@ -45,7 +45,8 @@ public:
     bool detension();
     bool holdPosition();
     bool powerOff();
-    LineStatusType lineStatus();
+    uint8_t motorId() {return ltcMotor.getId();}
+    LineStatusType lineStatus(bool retryOnError=true);
 
 private:
     DXLMotor &ltcMotor;
@@ -55,9 +56,10 @@ private:
     bool _prepareEngagement();
     bool _detension();
     bool _holdPosition();
-    bool runTillLineInTension(uint32_t speed);
-    bool runTillLineIsLoose(uint32_t speed, uint8_t dir);
+    bool runTillLineInTension(int32_t speed);
+    bool runTillLineIsLoose(int32_t speed, int8_t dir);
     bool softEmergencyStop(char *message);
+    uint8_t digitalReadExt(uint8_t pin);
 };
 
 #endif

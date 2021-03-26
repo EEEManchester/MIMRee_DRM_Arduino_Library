@@ -8,18 +8,18 @@
 
 //Pin
 const uint8_t PIN_DXL_DIR = 22;
-const uint8_t TC_PIN_LIMIT_SWITCH_LOW_NO = 11;
-const uint8_t TC_PIN_LIMIT_SWITCH_LOW_NC = 12;
-const uint8_t TC_PIN_LIMIT_SWITCH_HIGH_NO = 13;
-const uint8_t TC_PIN_LIMIT_SWITCH_HIGH_NC = 14;
+const uint8_t TC_PIN_LIMIT_SWITCH_LOW_NO = 10;
+const uint8_t TC_PIN_LIMIT_SWITCH_LOW_NC = 11;
+const uint8_t TC_PIN_LIMIT_SWITCH_HIGH_NO = 12;
+const uint8_t TC_PIN_LIMIT_SWITCH_HIGH_NC = 15;
 
 const uint16_t TC_SERVO_ENCODER_BIT = 4096;
 
-const uint16_t TC_VELOCITY_MAX = 1023;
-const uint16_t TC_VELOCITY_INC = 30;
-const uint16_t TC_VELOCITY_INITIAL = 50;
-const uint8_t TC_LOOSE_LINE_ROT_COUNT = 8;
-const int8_t TC_TENSIONING_ROT_DIR = 1;
+const int32_t TC_VELOCITY_MAX = 1022;
+const int32_t TC_VELOCITY_INC = 30;
+const int32_t TC_VELOCITY_INITIAL = 1022;
+const float TC_LOOSE_LINE_ROT_COUNT = 10;
+const int8_t TC_TENSIONING_ROT_DIR = -1;
 
 //Dxl servo firmware settings
 const uint8_t MOTOR_ID_LTC = 1;
