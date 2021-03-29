@@ -1,5 +1,5 @@
-#ifndef LHM_MESSAGE_H
-#define LHM_MESSAGE_H
+#ifndef MIMREE_DRM_CONTROLLER_LHM_MESSAGE_H
+#define MIMREE_DRM_CONTROLLER_LHM_MESSAGE_H
 
 #define __builtin_va_start(v,l)
 #define __builtin_va_end(v)
@@ -8,6 +8,7 @@
 
 #include <Arduino.h>
 #include <USBSerial.h>
+
 #include "LHMDataTable.h"
 
 enum class CommandType {

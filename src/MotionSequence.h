@@ -1,11 +1,10 @@
-#ifndef MOTION_SEQUENCE_H
-#define MOTION_SEQUENCE_H
+#ifndef MIMREE_DRM_CONTROLLER_MOTION_SEQUENCE_H
+#define MIMREE_DRM_CONTROLLER_MOTION_SEQUENCE_H
+
+#include <Arduino.h>
 
 #include "DxlMotor.h"
-#include <Arduino.h>
 #include "LHMDataTable.h"
-
-
 
 enum class MotionSequenceType
 {

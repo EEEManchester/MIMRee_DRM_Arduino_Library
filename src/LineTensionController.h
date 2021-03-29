@@ -1,8 +1,9 @@
-#ifndef LINE_TENSION_CONTROLLER_H
-#define LINE_TENSION_CONTROLLER_H
+#ifndef MIMREE_DRM_CONTROLLER_LINE_TENSION_CONTROLLER_H
+#define MIMREE_DRM_CONTROLLER_LINE_TENSION_CONTROLLER_H
 
 #include <Arduino.h>
 #include <Dynamixel2Arduino.h>
+
 #include "OlamDataTable.h"
 #include "DxlMotor.h"
 

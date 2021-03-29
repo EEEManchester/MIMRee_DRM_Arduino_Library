@@ -1,5 +1,5 @@
-#ifndef DXL_MOTOR_H
-#define DXL_MOTOR_H
+#ifndef MIMREE_DRM_CONTROLLER_DXLMOTOR_H
+#define MIMREE_DRM_CONTROLLER_DXLMOTOR_H
 
 #include <Arduino.h>
 #include <Dynamixel2Arduino.h>
@@ -14,13 +14,13 @@ public:
     DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId, DEBUG_SERIAL_CLASS &debugSerial);
     Dynamixel2Arduino &dxl;
     uint8_t getId() { return id; };
-    float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
-    float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
-    float getLastSetGoalPosition() { return lastSetGoalPosition; };
-    OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; };
-    int32_t getLastSetVelocityProfile() { return lastSetVelocityProfile; }
-    int32_t getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
-    bool isInErrorStatus() { return errorStatus; };
+    inline float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
+    inline float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
+    inline float getLastSetGoalPosition() { return lastSetGoalPosition; };
+    inline OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; };
+    inline int32_t getLastSetVelocityProfile() { return lastSetVelocityProfile; }
+    inline int32_t getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
+    inline bool isInErrorStatus() { return errorStatus; };
 
     bool isOnline();
     bool reboot();

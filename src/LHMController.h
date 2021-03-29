@@ -1,12 +1,13 @@
 //TODO Retry on execution failure
 
-#ifndef LHM_CONTROLLER_H
-#define LHM_CONTROLLER_H
+#ifndef MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
+#define MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 
 #include <Arduino.h>
 #include <USBSerial.h>
 #include <Dynamixel2Arduino.h>
 #include <Servo.h>
+
 #include "LHMDataTable.h"
 #include "LHMMessage.h"
 #include "DxlMotor.h"
