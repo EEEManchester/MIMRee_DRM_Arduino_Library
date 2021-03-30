@@ -36,7 +36,7 @@ void MAVLink::sendMessage(mavlink_message_t *msg)
 {
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     uint16_t bufferLen = mavlink_msg_to_send_buffer(buffer, msg);
-    delay(1000);
+    delay(1000);//why?
     _MAVSerial->write(buffer, bufferLen);
 }
 
@@ -118,10 +118,10 @@ void MAVLink::readDebug(uint32_t &timestamp, uint8_t &index, float &value)
                 value = data.value;
                 break;
             }
-                // case MAVLINK_MSG_ID_DEBUG_VECT:
-                // {
+            // case MAVLINK_MSG_ID_DEBUG_VECT:
+            // {
 
-                // }
+            // }
             }
         }
     }
