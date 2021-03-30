@@ -2,7 +2,7 @@
 #define MIMREE_DRM_CONTROLLER_LHM_DATATABLE_H
 
 #define DXL_SERIAL Serial3
-#define COM_SERIAL Serial
+#define COM_SERIAL Serial2
 #define DEBUG_SERIAL Serial
 #define DEBUG_SERIAL_CLASS USBSerial
 
@@ -53,4 +53,75 @@ const uint8_t PIN_BUTTON_2 = 17;
 //Jettison
 const uint8_t JETTISON_SERVO_VALUE_CLOSE = 70;
 const uint8_t JETTISON_SERVO_VALUE_OPEN = 160;
+
+enum class MessageType{
+    UNKNOWN = 0,
+    CMD_IN = 10,
+    FB_CMD_RECEPTION = 11,
+    FB_CMD_SENT = 12,
+    STATUS_HINGE = 20,
+    STATUS_HOOK = 21,
+    STATUS_PAYLOAD = 22
+};
+
+enum class CommandType {
+    ERROR = -1,
+    UNKNOWN = 0,
+
+    RESET_DYNAMIXEL_COM = 91,
+    JETTISON = 99,
+    LOCK_LHM = 98,
+    
+    HINGE_POWER_OFF = 1,
+    HINGE_TAKE_OFF = 2,
+    HINGE_LANDING = 3,
+    HINGE_SWING_REDUCTION = 4,
+    
+    HOOK_POWER_OFF = 10,
+    HOOK_CLOSE = 11,
+    HOOK_OPEN = 12,
+};
+
+enum class ExecutionResult {
+    Failed = 0,
+    Successful = 1
+};
+
+enum class HookStatus
+{
+    UNKNOWN = 0,
+    OFFLINE,
+    ERROR,
+    FULLY_CLOSED = 10,
+    FULLY_OPEN,
+    LOOSE,
+    CLOSING = 20,
+    OPENNING
+};
+
+enum class HingeStatus
+{
+    UNKNOWN = 0,
+    OFFLINE,
+    ERROR,
+    TORQUE_OFF = 10,
+    TAKEOFF_MODE = 20,
+    LANDING_POSITION_IN_TRANSITION = 30,
+    LANDING_POSITION_READY = 31,
+    SWING_REDUCTION = 40
+};
+
+enum class OnOffStatus
+{
+    OFF = 0,
+    ON
+};
+
+enum class LimitSwitchStatus
+{
+    OFFLINE = 0,
+    ERROR,
+    CLOSED = 10,
+    OPEN,
+};
 #endif
