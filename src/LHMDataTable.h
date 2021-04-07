@@ -1,10 +1,22 @@
 #ifndef MIMREE_DRM_CONTROLLER_LHM_DATATABLE_H
 #define MIMREE_DRM_CONTROLLER_LHM_DATATABLE_H
 
+
 #define DXL_SERIAL Serial3
 #define COM_SERIAL Serial2
 #define DEBUG_SERIAL Serial
 #define DEBUG_SERIAL_CLASS USBSerial
+
+#ifdef LHM_DEBUG
+#define LHM_DEBUG_PRINTF(fmt, ...) DEBUG_SERIAL.printf(fmt, ##__VA_ARGS__)
+#define LHM_DEBUG_PRINTLN(a) DEBUG_SERIAL.println(a)
+#else
+#define LHM_DEBUG_PRINTF(fmt, ...) 
+#define LHM_DEBUG_PRINTLN(a)
+#endif
+
+#include "mavlink/mavlink.h"
+#include "OpenCM904EXP.h"
 
 //Pin
 const uint8_t PIN_LIMIT_SWITCH_CLOSED_TOP = 13;      //blue
@@ -15,10 +27,9 @@ const uint8_t PIN_PE_SENSOR = 7;                     //white
 const uint8_t PIN_JETTISON_SERVO_PWM = 6;
 
 //Communication
-const char SERIAL_PREFIX = '$';
-const char SERIAL_MESSAGE_TYPE_INDICATOR_CMD = 'C';
-const char SERIAL_MESSAGE_TYPE_INDICATOR_FBK = 'F';
-const char SERIAL_MESSAGE_TYPE_INDICATOR_STATUS = 'S';
+const uint8_t LHM_MAV_SYS_ID = 1;
+const uint8_t LHM_MAV_COMP_ID = MAV_COMP_ID_USER31;
+const unsigned long LHM_MAV_BAUDRATE = 57600;
 
 //Dxl servo firmware settings
 const uint8_t MOTOR_ID_HOOK = 1;
@@ -42,27 +53,16 @@ const float MOVING_THRESHOLD_POSITION = POSITION_TOLERANCE;
 const uint16_t MOTION_SEQ_LANDING[] = {3, MOTOR_ID_HINGE_ROLL, HINGE_POS_VERTICAL, 100, MOTOR_ID_HINGE_PITCH, 1024, 100, MOTOR_ID_HINGE_ROLL, 1024, 50};
 
 //OpenCM 9.04 + 485 EXP specific
-const uint8_t PIN_DXL_DIR = 22;
-const uint8_t PIN_LED_0 = 14;
-const uint8_t PIN_LED_RED = 18;
-const uint8_t PIN_LED_GREEN = 19;
-const uint8_t PIN_LED_BLUE = 20;
-const uint8_t PIN_BUTTON_JETTISON = 16;
-const uint8_t PIN_BUTTON_2 = 17;
+const uint8_t PIN_BUTTON_JETTISON = PIN_BUTTON_1;
 
 //Jettison
 const uint8_t JETTISON_SERVO_VALUE_CLOSE = 70;
 const uint8_t JETTISON_SERVO_VALUE_OPEN = 160;
 
-enum class MessageType{
-    UNKNOWN = 0,
-    CMD_IN = 10,
-    FB_CMD_RECEPTION = 11,
-    FB_CMD_SENT = 12,
-    STATUS_HINGE = 20,
-    STATUS_HOOK = 21,
-    STATUS_PAYLOAD = 22
-};
+const char LHM_MSG_TYPE_UNKNOWN[10] = "LHMU";
+const char LHM_MSG_TYPE_CMD_IN[10] = "LHMC";
+const char LHM_MSG_TYPE_CMD_FB[10] = "LHMFB";
+const char LHM_MSG_TYPE_STATUS_REPORT[10] = "LHMSR";
 
 enum class CommandType {
     ERROR = -1,
@@ -111,7 +111,7 @@ enum class HingeStatus
     SWING_REDUCTION = 40
 };
 
-enum class OnOffStatus
+enum class OnOff
 {
     OFF = 0,
     ON

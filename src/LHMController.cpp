@@ -2,10 +2,9 @@
 
 LHMController::LHMController()
     : dxl(Dynamixel2Arduino(DXL_SERIAL, PIN_DXL_DIR)),
-      lhmMessage(LHMMessage()),
-      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK, DEBUG_SERIAL)),
-      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH, DEBUG_SERIAL)),
-      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL, DEBUG_SERIAL)),
+      hookMotor(DXLMotor(dxl, MOTOR_ID_HOOK)),
+      hingeMotorPitch(DXLMotor(dxl, MOTOR_ID_HINGE_PITCH)),
+      hingeMotorRoll(DXLMotor(dxl, MOTOR_ID_HINGE_ROLL)),
       btnJet(PIN_BUTTON_JETTISON)
 {
     motors[0] = &hookMotor;
@@ -21,34 +20,18 @@ LHMController::LHMController()
     }
 }
 
-void LHMController::initiate()
+void LHMController::setup()
 {
     dxl.begin(DXL_BAUD_RATE);
     dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
-
-    hingeMotorPitch.reboot();
-    hingeMotorRoll.reboot();
-    hookMotor.reboot();
-    hookMotor.setOperatingMode(OP_VELOCITY);
-    stopHookMotor();
-    stopHingeMotor();
 
     pinMode(PIN_LIMIT_SWITCH_CLOSED_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
 
-    pinMode(PIN_LED_0, OUTPUT);
-    pinMode(PIN_LED_RED, OUTPUT);
-    pinMode(PIN_LED_GREEN, OUTPUT);
-    pinMode(PIN_LED_BLUE, OUTPUT);
-
-    digitalWrite(PIN_LED_0, HIGH);
-    digitalWrite(PIN_LED_RED, HIGH);
-    digitalWrite(PIN_LED_GREEN, HIGH);
-    digitalWrite(PIN_LED_BLUE, HIGH);
-
-    btnJet.setup();
+    setupOnBoardDevices();
+    // btnJet.setup();
 
     uint8_t servoMin, servoMax;
     if (JETTISON_SERVO_VALUE_CLOSE < JETTISON_SERVO_VALUE_OPEN)
@@ -64,20 +47,34 @@ void LHMController::initiate()
     jettisonServo.attach(PIN_JETTISON_SERVO_PWM, servoMin, servoMax);
 }
 
+bool LHMController::initiate()
+{
+    bool result = true;
+    result = result & hingeMotorPitch.reboot();
+    result = result & hingeMotorRoll.reboot();
+    result = result & hookMotor.reboot();
+    result = result & hookMotor.setOperatingMode(OP_VELOCITY);
+    result = result & stopHookMotor();
+    result = result & stopHingeMotor();
+    DEBUG_SERIAL.println(result ? "LHMController::initiateDXL: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
+    return result;
+}
+
 HingeStatus LHMController::getHingeStatus()
 {
-    Serial.printf("LHMController::getHingeStatus: hingeMotorPitch -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
-                  (int)hingeMotorPitch.getLastSetOperatingMode(),
-                  hingeMotorPitch.getLastSetGoalPosition(),
-                  hingeMotorPitch.getLastSetGoalVelocity(),
-                  hingeMotorPitch.getLastSetVelocityProfile(),
-                  hingeMotorPitch.getLastSetAccelerationProfile());
-    Serial.printf("LHMController::getHingeStatus: hingeMotorRoll -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
-                  (int)hingeMotorRoll.getLastSetOperatingMode(),
-                  hingeMotorRoll.getLastSetGoalPosition(),
-                  hingeMotorRoll.getLastSetGoalVelocity(),
-                  hingeMotorRoll.getLastSetVelocityProfile(),
-                  hingeMotorRoll.getLastSetAccelerationProfile());
+    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorPitch -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+                     (int)hingeMotorPitch.getLastSetOperatingMode(),
+                     hingeMotorPitch.getLastSetGoalPosition(),
+                     hingeMotorPitch.getLastSetGoalVelocity(),
+                     hingeMotorPitch.getLastSetVelocityProfile(),
+                     hingeMotorPitch.getLastSetAccelerationProfile());
+    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorRoll -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+                     (int)hingeMotorRoll.getLastSetOperatingMode(),
+                     hingeMotorRoll.getLastSetGoalPosition(),
+                     hingeMotorRoll.getLastSetGoalVelocity(),
+                     hingeMotorRoll.getLastSetVelocityProfile(),
+                     hingeMotorRoll.getLastSetAccelerationProfile());
+
     if (!hingeMotorPitch.isOnline() || !hingeMotorRoll.isOnline())
     {
         return HingeStatus::OFFLINE;
@@ -134,7 +131,8 @@ HookStatus LHMController::getHookStatus()
 {
     LimitSwitchStatus top_ls = getTopLimitSwitchStatus();
     LimitSwitchStatus bot_ls = getBotLimitSwitchStatus();
-    DEBUG_SERIAL.printf("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
+    LHM_DEBUG_PRINTF("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
+
     if (top_ls == LimitSwitchStatus::ERROR || bot_ls == LimitSwitchStatus::ERROR)
         return HookStatus::ERROR;
     if (top_ls == LimitSwitchStatus::CLOSED && bot_ls == LimitSwitchStatus::OPEN)
@@ -164,11 +162,6 @@ HookStatus LHMController::getHookStatus()
     return HookStatus::LOOSE;
 }
 
-bool LHMController::isEngaged()
-{
-    return getPESensorStatus() == OnOffStatus::ON;
-}
-
 bool LHMController::setSwingReductionMode()
 {
     bool result = hingeMotorPitch.setOperatingMode(OP_CURRENT);
@@ -177,8 +170,7 @@ bool LHMController::setSwingReductionMode()
     result = result && hingeMotorRoll.setOperatingMode(OP_CURRENT);
     result = result && hingeMotorRoll.setTorqueOn();
     result = result && hingeMotorRoll.setGoalCurrent(0);
-    DEBUG_SERIAL.printf("LHMController::setSwingReductionMode: %s\n", result ? "Successful" : "Failed");
-    lhmMessage.sendCommandFeedback(CommandType::HINGE_SWING_REDUCTION, result);
+    LHM_DEBUG_PRINTF("LHMController::setSwingReductionMode: %s\n", result ? "Successful" : "Failed");
     return result;
 }
 
@@ -222,8 +214,7 @@ bool LHMController::setTakeoffMode()
 {
     bool result = hingeMotorPitch.setTorqueOff();
     result = result && hingeMotorRoll.setTorqueOff();
-    DEBUG_SERIAL.printf("LHMController::setTakeoffMode: %s\n", result ? "Successful" : "Failed");
-    lhmMessage.sendCommandFeedback(CommandType::HINGE_TAKE_OFF, result);
+    LHM_DEBUG_PRINTF("LHMController::setTakeoffMode: %s\n", result ? "Successful" : "Failed");
     return result;
 }
 
@@ -231,8 +222,7 @@ bool LHMController::stopHingeMotor()
 {
     bool result = hingeMotorPitch.setTorqueOff();
     result = result && hingeMotorRoll.setTorqueOff();
-    DEBUG_SERIAL.printf("LHMController::stopHingeMotor: %s\n", result ? "Successful" : "Failed");
-    lhmMessage.sendCommandFeedback(CommandType::HINGE_POWER_OFF, result);
+    LHM_DEBUG_PRINTF("LHMController::stopHingeMotor: %s\n", result ? "Successful" : "Failed");
     return result;
 }
 
@@ -268,7 +258,6 @@ bool LHMController::closeHook()
         return false;
     }
 
-    //TODO make this none blocking
     bool result = hookMotor.setTorqueOn();
     result = result && hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_CLOSE);
     if (result)
@@ -340,23 +329,15 @@ LimitSwitchStatus LHMController::getLimitSwitchStatus(uint8_t closed_pin, uint8_
     {
         status = LimitSwitchStatus::OFFLINE;
     }
-    DEBUG_SERIAL.printf("LHMController::getLimitSwitchStatus::pin[%d & %d] -> %d\n", closed_pin, open_pin, (int)status);
+    LHM_DEBUG_PRINTF("LHMController::getLimitSwitchStatus::pin[%d & %d] -> %d\n", closed_pin, open_pin, (int)status);
     return status;
 }
 
-OnOffStatus LHMController::getPESensorStatus()
+OnOff LHMController::getPESensorStatus()
 {
-    DEBUG_SERIAL.println("LHMController::getPESensorStatus");
     if (digitalReadExt(PIN_PE_SENSOR) == HIGH)
     {
-        return OnOffStatus::ON;
+        return OnOff::ON;
     }
-    return OnOffStatus::OFF;
-}
-
-uint8_t LHMController::digitalReadExt(uint8_t pin)
-{
-    uint8_t state = digitalRead(pin);
-    DEBUG_SERIAL.printf("LHMController::digitalReadExt::pin[%d]=%d\n", pin, state);
-    return state;
+    return OnOff::OFF;
 }

@@ -25,11 +25,11 @@ enum class MotionSequenceStatusType
 class Stage
 {
 public:
-    int8_t stageId() { return _stageId; }
-    uint8_t motorId() { return motor->getId(); }
-    int32_t goalPosition() { return _goalPosition; }
-    int32_t accuracy() { return _accuracy; }
-    bool started() { return _started; }
+    inline int8_t stageId() { return _stageId; }
+    inline uint8_t motorId() { return motor->getId(); }
+    inline int32_t goalPosition() { return _goalPosition; }
+    inline int32_t accuracy() { return _accuracy; }
+    inline bool started() { return _started; }
 
     void update(int8_t stageId, DXLMotor *motor, int32_t goalPosition, int32_t accuracy);
 
@@ -67,10 +67,10 @@ private:
 class MotionSequence
 {
 public:
-    MotionSequence(){};
+    inline MotionSequence(){};
     MotionSequence(MotionSequenceType type, DXLMotor *motors[], const uint16_t sequence[]);
-    MotionSequenceType sequenceType() { return _sequenceType; }
-    int8_t currentStageId() { return currentStage.stageId(); }
+    inline MotionSequenceType sequenceType() { return _sequenceType; }
+    inline int8_t currentStageId() { return currentStage.stageId(); }
     MotionSequenceStatusType status();
 
     /**

@@ -1,7 +1,7 @@
 #include "OlamController.h"
 OLAMController::OLAMController()
     : dxl(Dynamixel2Arduino(DXL_SERIAL, PIN_DXL_DIR)),
-      ltcMotor(DXLMotor(dxl, 1, DEBUG_SERIAL)),
+      ltcMotor(DXLMotor(dxl, 1)),
       ltController(LineTensionController(ltcMotor)),
       homeButton(17),
       engagementButton(16)

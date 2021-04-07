@@ -17,7 +17,7 @@ enum class LSButtonState
 class LongShortPressButton
 {
 public:
-    LongShortPressButton(uint8_t buttonPin) : pin(buttonPin) {}
+    inline LongShortPressButton(uint8_t buttonPin) : pin(buttonPin) {}
     void setup();
     LSButtonState getState();
 

@@ -4,23 +4,30 @@
 #include <Arduino.h>
 #include <Dynamixel2Arduino.h>
 
-#ifndef DEBUG_SERIAL_CLASS
-#define DEBUG_SERIAL_CLASS USBSerial
+#ifdef DXL_DEBUG
+#ifndef DEBUG_SERIAL
+#define DEBUG_SERIAL Serial
+#endif
+#define DXL_DEBUG_PRINTF(fmt, ...) DEBUG_SERIAL.printf(fmt, ##__VA_ARGS__)
+#define DXL_DEBUG_PRINTLN(a) DEBUG_SERIAL.println(a)
+#else
+#define DXL_DEBUG_PRINTF(fmt, ...) 
+#define DXL_DEBUG_PRINTLN(a)
 #endif
 
 class DXLMotor
 {
 public:
-    DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId, DEBUG_SERIAL_CLASS &debugSerial);
+    DXLMotor(Dynamixel2Arduino &dxl, uint8_t motorId);
     Dynamixel2Arduino &dxl;
-    uint8_t getId() { return id; };
-    inline float getLastSetGoalVelocity() { return lastSetGoalVelocity; };
-    inline float getLastSetGoalCurrent() { return lastSetGoalCurrent; };
-    inline float getLastSetGoalPosition() { return lastSetGoalPosition; };
-    inline OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; };
+    inline uint8_t getId() { return id; }
+    inline float getLastSetGoalVelocity() { return lastSetGoalVelocity; }
+    inline float getLastSetGoalCurrent() { return lastSetGoalCurrent; }
+    inline float getLastSetGoalPosition() { return lastSetGoalPosition; }
+    inline OperatingMode getLastSetOperatingMode() { return lastSetOperatingMode; }
     inline int32_t getLastSetVelocityProfile() { return lastSetVelocityProfile; }
     inline int32_t getLastSetAccelerationProfile() { return lastSetAccelerationProfile; }
-    inline bool isInErrorStatus() { return errorStatus; };
+    inline bool isInErrorStatus() { return errorStatus; }
 
     bool isOnline();
     bool reboot();
@@ -47,7 +54,6 @@ public:
 private:
     const uint8_t MAX_DXL_PROTOCOL_ATTEMPTS = 5;
 
-    DEBUG_SERIAL_CLASS &debugSerial;
     uint8_t id;
     bool errorStatus;
     

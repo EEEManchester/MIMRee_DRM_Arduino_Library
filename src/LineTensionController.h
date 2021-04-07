@@ -37,17 +37,18 @@ class LineTensionController
 {
 public:
     LineTensionController(DXLMotor &ltcMotor);
-    LineTensionControlModeType mode() { return _mode; }
-    bool run(LineTensionControlCommandType command);
 
-    bool isInHomeSequence() { return _isInHomeSequence; }
+    inline LineTensionControlModeType getCurrentMode() { return _mode; }
+    inline bool isInHomeSequence() { return _isInHomeSequence; }
+    inline uint8_t getMotorId() { return ltcMotor.getId(); }
+    LineStatusType getLineStatus(bool retryOnError = true);
+
+    bool run(LineTensionControlCommandType command);
     bool holdHome();
     bool prepareEngagement();
     bool detension();
     bool holdPosition();
     bool powerOff();
-    uint8_t motorId() {return ltcMotor.getId();}
-    LineStatusType lineStatus(bool retryOnError=true);
 
 private:
     DXLMotor &ltcMotor;
@@ -60,7 +61,13 @@ private:
     bool runTillLineInTension(int32_t speed);
     bool runTillLineIsLoose(int32_t speed, int8_t dir);
     bool softEmergencyStop(char *message);
-    uint8_t digitalReadExt(uint8_t pin);
+    
+    inline uint8_t digitalReadExt(uint8_t pin)
+    {
+        uint8_t state = digitalRead(pin);
+        DEBUG_SERIAL.printf("LineTensionController::digitalReadExt::pin[%d]=%d\n", pin, state);
+        return state;
+    }
 };
 
 #endif

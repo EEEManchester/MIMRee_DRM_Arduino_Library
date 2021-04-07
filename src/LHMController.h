@@ -1,5 +1,3 @@
-//TODO Retry on execution failure
-
 #ifndef MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 #define MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 
@@ -8,26 +6,35 @@
 #include <Dynamixel2Arduino.h>
 #include <Servo.h>
 
+#include "OpenCM904EXP.h"
 #include "LHMDataTable.h"
-#include "LHMMessage.h"
 #include "DxlMotor.h"
 #include "MotionSequence.h"
 #include "utilities/LongShortPressButton.h"
 
-class LHMController
+class LHMController : public OpenCM904EXP
 {
 public:
     LHMController();
-    void initiate();
+
+    DXLMotor hookMotor;
+    DXLMotor hingeMotorPitch;
+    DXLMotor hingeMotorRoll;
+    LongShortPressButton btnJet;
+
+    void setup();
+    bool initiate();
+
     HookStatus getHookStatus();
-    HookStatus getHookMotionStatus() { return hookMotionStatus; }
+    inline HookStatus getHookMotionStatus() { return hookMotionStatus; }
     HingeStatus getHingeStatus();
-    bool isEngaged();
+    inline bool isEngaged() { return getPESensorStatus() == OnOff::ON; }
+    bool isAtLandingPosition();
+    MotionSequenceStatusType getMotionSequenceStatus();
+    
     bool setSwingReductionMode();
     bool setTakeoffMode();
     bool setLandingPosition();
-    bool isAtLandingPosition();
-    MotionSequenceStatusType getMotionSequenceStatus();
     int8_t nextMotionSequence();
     bool stopHingeMotor();
     bool openHook();
@@ -35,15 +42,7 @@ public:
     bool stopHookMotor();
     bool jettison();
     bool lockLHM();
-    LimitSwitchStatus getTopLimitSwitchStatus();
-    LimitSwitchStatus getBotLimitSwitchStatus();
-
-    DXLMotor hookMotor;
-    DXLMotor hingeMotorPitch;
-    DXLMotor hingeMotorRoll;
-    LHMMessage lhmMessage;
-    LongShortPressButton btnJet;
-
+    
 private:
     Dynamixel2Arduino dxl;
     Servo jettisonServo;
@@ -51,11 +50,20 @@ private:
     HingeStatus hingeStatus;
     bool _isInMotionSequence;
     bool _motionSequenceStage;
-    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin, bool offlineRetry=true);
-    OnOffStatus getPESensorStatus();
-    uint8_t digitalReadExt(uint8_t pin);
     MotionSequence currentMotionSequence;
     DXLMotor *motors[3];
+
+    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin, bool offlineRetry = true);
+    LimitSwitchStatus getTopLimitSwitchStatus();
+    LimitSwitchStatus getBotLimitSwitchStatus();
+    OnOff getPESensorStatus();
+
+    inline uint8_t digitalReadExt(uint8_t pin)
+    {
+        uint8_t state = digitalRead(pin);
+        LHM_DEBUG_PRINTF("LHMController::digitalReadExt::pin[%d]=%d\n", pin, state);
+        return state;
+    }
 };
 
 #endif

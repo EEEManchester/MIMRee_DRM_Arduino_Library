@@ -40,7 +40,7 @@ int8_t MotionSequence::next()
 {
     printDebugInfo("MotionSequence::next");
     int8_t nextStageId = currentStage.stageId() + 1;
-    Serial.printf("MotionSequence::next: Sequence type: %d, Stage ID: %d/%d\n", (int)_sequenceType, nextStageId, sequence[0] - 1);
+    DXL_DEBUG_PRINTF("MotionSequence::next: Sequence type: %d, Stage ID: %d/%d\n", (int)_sequenceType, nextStageId, sequence[0] - 1);
     if (nextStageId > sequence[0] - 1)
     {
         return 2;
@@ -48,23 +48,17 @@ int8_t MotionSequence::next()
     uint8_t motorId = sequence[nextStageId * 3 + 1]-1;
     int32_t goalPos = sequence[nextStageId * 3 + 2];
     int32_t accuracy = sequence[nextStageId * 3 + 3];
-    Serial.printf("MotionSequence::next: Motor[%d(%d)] -> %d (+/-%d)\n", motors[motorId]->getId(), motorId+1, goalPos, accuracy);
+    DXL_DEBUG_PRINTF("MotionSequence::next: Motor[%d(%d)] -> %d (+/-%d)\n", motors[motorId]->getId(), motorId+1, goalPos, accuracy);
     delay(1000);
     currentStage.update(nextStageId, motors[motorId], goalPos, accuracy);
-    // currentStage.printDebugInfo("MotionSequence::next");
     int8_t result = currentStage.execute();
-    Serial.printf("MotionSequence::next: Result = %d\n", result);
-    currentStage.printDebugInfo("MotionSequence::next");
-    status();
-    currentStage.printDebugInfo("MotionSequence::next");
-    
-    printDebugInfo("MotionSequence::next_4");
+    DXL_DEBUG_PRINTF("MotionSequence::next: Result=%d\n", result);
     return result;
 }
 
 void MotionSequence::printDebugInfo(String scopeName)
 {
-    Serial.printf("[DEBUG | MS] %s Sequence[%d] -> motor[%d,%d,%d] | seq[%d,%d,%d,%d]\n",
+    DXL_DEBUG_PRINTF("%s Sequence[%d] -> motor[%d,%d,%d] | seq[%d,%d,%d,%d]\n",
     scopeName.c_str(),
     (int8_t)sequenceType(),
     motors[0]->getId(),
@@ -83,8 +77,7 @@ void Stage::update(int8_t stageId, DXLMotor *_motor, int32_t goalPosition, int32
     _goalPosition = goalPosition;
     _accuracy = accuracy;
     _started = false;
-    Serial.printf("Stage::update: [%d]: Motor[%d] -> %d (+/-%d)\n", stageId, motor->getId(), goalPosition, accuracy);
-    // printDebugInfo("Stage::update");
+    DXL_DEBUG_PRINTF("Stage::update: [%d]: Motor[%d] -> %d (+/-%d)\n", stageId, motor->getId(), goalPosition, accuracy);
 }
 
 int8_t Stage::completed()
@@ -131,7 +124,7 @@ int8_t Stage::execute()
 
 void Stage::printDebugInfo(String scopeName)
 {
-    Serial.printf("[DEBUG | MS-S] %s CurrentStage[%d] -> motor[%d] | started[%d] | goal[%d] | accuracy[%d]\n",
+    DXL_DEBUG_PRINTF("%s CurrentStage[%d] -> motor[%d] | started[%d] | goal[%d] | accuracy[%d]\n",
     scopeName.c_str(),
     stageId(),
     motorId(),

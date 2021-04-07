@@ -1,5 +1,6 @@
 #include <OlamController.h>
 #include <OlamDataTable.h>
+#include <Arduino.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 0;
@@ -29,8 +30,8 @@ void loop()
   if ((int)millis() - prevStatusReportTime > STATUS_REPORT_INTERVAL)
   {
     prevStatusReportTime = millis();
-    LineStatusType ls = olam.ltController.lineStatus();
-    DEBUG_SERIAL.printf("OLAM motor ltc module id: %d\n", olam.ltController.motorId());
+    LineStatusType ls = olam.ltController.getLineStatus();
+    DEBUG_SERIAL.printf("OLAM motor ltc module id: %d\n", olam.ltController.getMotorId());
     olam.ltcMotor.isOnline();
     DEBUG_SERIAL.printf("Line status is %d\n", (int)ls);
   }

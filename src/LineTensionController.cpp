@@ -58,7 +58,7 @@ bool LineTensionController::detension()
 
 bool LineTensionController::_detension()
 {
-    LineStatusType lsType = lineStatus();
+    LineStatusType lsType = getLineStatus();
     if (lsType == LINE_IN_TENSION)
     {
         return runTillLineIsLoose(TC_VELOCITY_INITIAL, TC_TENSIONING_ROT_DIR * -1);
@@ -92,7 +92,7 @@ bool LineTensionController::_home()
 {
     DEBUG_SERIAL.println("LineTensionController::holdHome: Starting home sequence.");
     delay(2);
-    LineStatusType lsType = lineStatus();
+    LineStatusType lsType = getLineStatus();
     if (lsType == LINE_STATUS_ERROR || lsType == LINE_STATUS_UNKNOWN)
     {
         return false;
@@ -160,7 +160,7 @@ bool LineTensionController::_prepareEngagement()
     return true;
 }
 
-LineStatusType LineTensionController::lineStatus(bool retryOnError)
+LineStatusType LineTensionController::getLineStatus(bool retryOnError)
 {
     int lsHighNO = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NO) == LOW;
     int lsHighNC = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NC) == LOW;
@@ -181,15 +181,15 @@ LineStatusType LineTensionController::lineStatus(bool retryOnError)
     if (retryOnError)
     {
         delay(50);
-        return lineStatus(false);
+        return getLineStatus(false);
     }
     return LINE_STATUS_ERROR;
 }
 
 bool LineTensionController::runTillLineInTension(int32_t speed)
 {
-    LineStatusType lsType = lineStatus();
-    DEBUG_SERIAL.printf("LineTensionController::runTillLineInTension: lineStatus is %d\n", lsType);
+    LineStatusType lsType = getLineStatus();
+    DEBUG_SERIAL.printf("LineTensionController::runTillLineInTension: getLineStatus is %d\n", lsType);
     if (lsType == LINE_IN_TENSION)
     {
         DEBUG_SERIAL.println("LineTensionController::runTillLineInTension: Pickup line is already in tension. Skip sequence.");
@@ -215,7 +215,7 @@ bool LineTensionController::runTillLineInTension(int32_t speed)
             return false;
         }
         delay(5);
-        lsType = lineStatus();
+        lsType = getLineStatus();
     }
     result = ltcMotor.setTorqueOff();
     if (!result)
@@ -228,7 +228,7 @@ bool LineTensionController::runTillLineInTension(int32_t speed)
 
 bool LineTensionController::runTillLineIsLoose(int32_t speed, int8_t dir)
 {
-    LineStatusType lsType = lineStatus();
+    LineStatusType lsType = getLineStatus();
     if (lsType == LINE_LOOSE)
     {
         DEBUG_SERIAL.println("LineTensionController::runTillLineIsLoose: Pickup line is already loose. Skip sequence.");
@@ -243,7 +243,7 @@ bool LineTensionController::runTillLineIsLoose(int32_t speed, int8_t dir)
     {
         return false;
     }
-    lsType = lineStatus();
+    lsType = getLineStatus();
     while (lsType != LINE_LOOSE)
     {
         // DEBUG_SERIAL.printf("LineTensionController::runTillLineIsLoose: Line status: %d\n", lsType);
@@ -261,7 +261,7 @@ bool LineTensionController::runTillLineIsLoose(int32_t speed, int8_t dir)
         //         return false;
         //     }
         // }
-        lsType = lineStatus();
+        lsType = getLineStatus();
     }
     result = ltcMotor.setTorqueOff();
     if (!result)
@@ -287,11 +287,4 @@ bool LineTensionController::softEmergencyStop(char *message)
     _mode = TC_POWERED_OFF;
     DEBUG_SERIAL.println("LineTensionController::softEmergencyStop: TC motor has been rebooted.");
     return true;
-}
-
-uint8_t LineTensionController::digitalReadExt(uint8_t pin)
-{
-    uint8_t state = digitalRead(pin);
-    DEBUG_SERIAL.printf("LineTensionController::digitalReadExt::pin[%d]=%d\n", pin, state);
-    return state;
 }
