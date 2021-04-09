@@ -19,7 +19,6 @@ MAVMessage LHMMessage::readMAVMessage()
         clearMsgIdHist();
         return MAVMessage(LHM_MAV_MSG_ID_HEARTBEAT, true);
     }
-
 #ifdef MAV_DEBUG_ATTITUDE
     if (msg.msgid == MAVLINK_MSG_ID_ATTITUDE)
     {

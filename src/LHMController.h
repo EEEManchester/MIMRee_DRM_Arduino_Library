@@ -34,7 +34,7 @@ public:
     inline bool isEngaged() { return getPESensorStatus() == ON; }
     bool isAtLandingPosition();
     MotionSequenceStatusType getMotionSequenceStatus();
-    
+
     bool setSwingReductionMode();
     bool setTakeoffMode();
     bool setLandingPosition();
@@ -45,7 +45,7 @@ public:
     bool stopHookMotor();
     bool jettison();
     bool lockLHM();
-    
+
 private:
     Dynamixel2Arduino dxl;
     Servo jettisonServo;

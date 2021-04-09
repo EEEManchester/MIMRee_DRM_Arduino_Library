@@ -15,14 +15,13 @@
 #include "mavlink/MAVLink.h"
 #include "mavlink/c_library_v2/mavlink_types.h"
 
-
 struct MAVMessage
 {
     inline MAVMessage(lhm_mav_msg_id_t msgId, bool accepted) : msgId(msgId), accepted(accepted)
     {
     }
-    virtual ~MAVMessage(){}
-    
+    virtual ~MAVMessage() {}
+
     lhm_mav_msg_id_t msgId;
     bool accepted;
 

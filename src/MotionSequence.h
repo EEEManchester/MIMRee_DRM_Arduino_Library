@@ -54,7 +54,7 @@ public:
      */
     int8_t execute();
 
-    void printDebugInfo(String scopeName="");
+    void printDebugInfo(String scopeName = "");
 
 private:
     bool _started;
@@ -80,7 +80,7 @@ public:
      *          2: sequence reaches end
      */
     int8_t next();
-    void printDebugInfo(String scopeName="");
+    void printDebugInfo(String scopeName = "");
 
 private:
     MotionSequenceType _sequenceType = MotionSequenceType::UNKNOWN;

@@ -7,18 +7,13 @@
 const int STATUS_REPORT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 1;
 
-mavlink_system_t mavlink_system = {
-    1, // System ID (1-255)
-    55 // Component ID (a MAV_COMPONENT value)
-};
-
 LHMController lhmController = LHMController();
 LHMMessage lhmMsg = LHMMessage(lhmController);
 
 void setup()
 {
   DEBUG_SERIAL.begin(1000000);
-  waitDebugSerial();
+  // waitDebugSerial();
 
   lhmController.setup();
   while (!lhmMsg.initiate(1))

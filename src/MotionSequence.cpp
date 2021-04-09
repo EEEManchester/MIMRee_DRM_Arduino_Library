@@ -5,7 +5,7 @@ MotionSequence::MotionSequence(MotionSequenceType sequenceType, DXLMotor *_motor
     : _sequenceType(sequenceType),
       motors(_motors),
       sequence(sequence)
-{    
+{
     currentStage = Stage();
 }
 
@@ -45,10 +45,10 @@ int8_t MotionSequence::next()
     {
         return 2;
     }
-    uint8_t motorId = sequence[nextStageId * 3 + 1]-1;
+    uint8_t motorId = sequence[nextStageId * 3 + 1] - 1;
     int32_t goalPos = sequence[nextStageId * 3 + 2];
     int32_t accuracy = sequence[nextStageId * 3 + 3];
-    DXL_DEBUG_PRINTF("MotionSequence::next: Motor[%d(%d)] -> %d (+/-%d)\n", motors[motorId]->getId(), motorId+1, goalPos, accuracy);
+    DXL_DEBUG_PRINTF("MotionSequence::next: Motor[%d(%d)] -> %d (+/-%d)\n", motors[motorId]->getId(), motorId + 1, goalPos, accuracy);
     delay(1000);
     currentStage.update(nextStageId, motors[motorId], goalPos, accuracy);
     int8_t result = currentStage.execute();
@@ -59,15 +59,15 @@ int8_t MotionSequence::next()
 void MotionSequence::printDebugInfo(String scopeName)
 {
     DXL_DEBUG_PRINTF("%s Sequence[%d] -> motor[%d,%d,%d] | seq[%d,%d,%d,%d]\n",
-    scopeName.c_str(),
-    (int8_t)sequenceType(),
-    motors[0]->getId(),
-    motors[1]->getId(),
-    motors[2]->getId(),
-    sequence[0],
-    sequence[1],
-    sequence[2],
-    sequence[3]);
+                     scopeName.c_str(),
+                     (int8_t)sequenceType(),
+                     motors[0]->getId(),
+                     motors[1]->getId(),
+                     motors[2]->getId(),
+                     sequence[0],
+                     sequence[1],
+                     sequence[2],
+                     sequence[3]);
 }
 
 void Stage::update(int8_t stageId, DXLMotor *_motor, int32_t goalPosition, int32_t accuracy)
@@ -125,10 +125,10 @@ int8_t Stage::execute()
 void Stage::printDebugInfo(String scopeName)
 {
     DXL_DEBUG_PRINTF("%s CurrentStage[%d] -> motor[%d] | started[%d] | goal[%d] | accuracy[%d]\n",
-    scopeName.c_str(),
-    stageId(),
-    motorId(),
-    started(),
-    goalPosition(),
-    accuracy());
+                     scopeName.c_str(),
+                     stageId(),
+                     motorId(),
+                     started(),
+                     goalPosition(),
+                     accuracy());
 }
