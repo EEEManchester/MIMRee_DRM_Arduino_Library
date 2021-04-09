@@ -34,8 +34,6 @@ Mavlink protocol is used to handle communication between the LHM and the GCS. Th
 
 To request LHM to perform certain task, GCS needs to send a COMMAND_INT ([#75](https://mavlink.io/en/messages/common.html#COMMAND_INT)) message.
 
-
-[Table 1](#table.1)
 | Field Name       | Type     | Values                    | Description                                              |
 | ---------------- | -------- | ------------------------- | -------------------------------------------------------- |
 | target_system    | uint8_t  | 1                         | System ID of LHM                                         |
@@ -77,8 +75,8 @@ LHM reports its status using DEBUG_VECT ([#250](https://mavlink.io/en/messages/c
 | ---------- | -------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | name       | char[10] | "LHMS"                       | Name - used to identify different DEBUG_VECT.                                                                                                                                                     |
 | time_usec  | uint64_t |                              | Timestamp (unit: us) (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number. |
-| x          | float    | [LHM Hinge status](#table.2) | Status of the hinge.                                                                                                                                                                              |
-| y          | float    | [LHM Hook status](#table.2)  | Status of the hook.                                                                                                                                                                               |
+| x          | float    | [Hinge status](#table.2) | Status of the hinge.                                                                                                                                                                              |
+| y          | float    | [Hook status](#table.2)  | Status of the hook.                                                                                                                                                                               |
 | z          | float    | 0, 1                         | Payload engagement. 0 - not engaged, 1 - engaged.                                                                                                                                                 |
 
 ### 1.2.4. LHM Command and status
