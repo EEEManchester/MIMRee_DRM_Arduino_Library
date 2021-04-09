@@ -84,13 +84,13 @@ LHM reports its status using DEBUG_VECT ([#250](https://mavlink.io/en/messages/c
 <a name="table.1"></a>*Table 1 LHM Command*
 | Value | Command                      | Description                                                      |
 | ----- | ---------------------------- | ---------------------------------------------------------------- |
-| 1     | Hinge - torque off           | Turn off servo holding torque                                    |
-| 2     | Hinge - take-off mode        | Commands the LHM  to prepare for take off.                       |
-| 3     | Hinge - landing mode         | Commands the LHM to prepare for landing.                         |
-| 4     | Hinge - swing reduction mode | Commands the LHM to reduce swing during flight.                  |
-| 10    | Hook - torque off            | Turn off holding torque for the hook servo                       |
-| 11    | Hook - close                 | Lock the hook in closed position                                 |
-| 12    | Hook - open                  | Unlock the hook so it opens freely by the weight of the payload. |
+| 10    | Hinge - torque off           | Turn off servo holding torque                                    |
+| 12    | Hinge - take-off mode        | Commands the LHM  to prepare for take off.                       |
+| 13    | Hinge - landing mode         | Commands the LHM to prepare for landing.                         |
+| 14    | Hinge - swing reduction mode | Commands the LHM to reduce swing during flight.                  |
+| 20    | Hook - torque off            | Turn off holding torque for the hook servo                       |
+| 21    | Hook - close                 | Lock the hook in closed position                                 |
+| 22    | Hook - open                  | Unlock the hook so it opens freely by the weight of the payload. |
 | 90    | Reset                        | Reset the controller                                             |
 | 98    | Lock LHM                     | Lock LHM in payload bay                                          |
 | 99    | Jettison                     | Jettison the LHM in an emergency                                 |
