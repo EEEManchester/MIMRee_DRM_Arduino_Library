@@ -58,26 +58,26 @@ LHM sends command feedback on two occassions:
 
 Command feedback is reported using COMMAND_ACK ([#77](https://mavlink.io/en/messages/common.html#COMMAND_ACK)).
 
-| Field Name          | Type     | Values                  | Description                                                                                                                                |
-| ------------------- | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| command             | uint16_t | [LHM Command](#table.1) | The command to be acknowledged.                                                                                                            |
-| result              | uint8_t  | 0, 1                    | Result of command, 0 is failed and 1 is successful.                                                                                        |
-| progress            | uint8_t  | 0, 1, 2, 3              | WIP: 0: Error (not implemented), 1: command_int received and interpreted, 2: mission started, 3: mission finished (not implemented)        |
-| result_param2       | int32_t  |                         | Not used.                                                                                                                                  |
-| target_system       | uint8_t  |                         | System ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.    |
-| target_component    | uint8_t  |                         | Component ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement. |
+| Field Name       | Type     | Values                  | Description                                                                                                                                |
+| ---------------- | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| command          | uint16_t | [LHM Command](#table.1) | The command to be acknowledged.                                                                                                            |
+| result           | uint8_t  | 0, 1                    | Result of command, 0 is failed and 1 is successful.                                                                                        |
+| progress         | uint8_t  | 0, 1, 2, 3              | WIP: 0: Error (not implemented), 1: command_int received and interpreted, 2: mission started, 3: mission finished (not implemented)        |
+| result_param2    | int32_t  |                         | Not used.                                                                                                                                  |
+| target_system    | uint8_t  |                         | System ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.    |
+| target_component | uint8_t  |                         | Component ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement. |
 
 ### 1.2.3. LHM status report
 
 LHM reports its status using DEBUG_VECT ([#250](https://mavlink.io/en/messages/common.html#DEBUG_VECT)) at a rate of 1Hz (can be configured).
 
-| Field Name | Type     | Values                       | Description                                                                                                                                                                                       |
-| ---------- | -------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name       | char[10] | "LHMS"                       | Name - used to identify different DEBUG_VECT.                                                                                                                                                     |
-| time_usec  | uint64_t |                              | Timestamp (unit: us) (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number. |
+| Field Name | Type     | Values                   | Description                                                                                                                                                                                       |
+| ---------- | -------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name       | char[10] | "LHMS"                   | Name - used to identify different DEBUG_VECT.                                                                                                                                                     |
+| time_usec  | uint64_t |                          | Timestamp (unit: us) (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number. |
 | x          | float    | [Hinge status](#table.2) | Status of the hinge.                                                                                                                                                                              |
 | y          | float    | [Hook status](#table.2)  | Status of the hook.                                                                                                                                                                               |
-| z          | float    | 0, 1                         | Payload engagement. 0 - not engaged, 1 - engaged.                                                                                                                                                 |
+| z          | float    | 0, 1                     | Payload engagement. 0 - not engaged, 1 - engaged.                                                                                                                                                 |
 
 ### 1.2.4. LHM Command and status
 
