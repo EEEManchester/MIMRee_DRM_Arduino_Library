@@ -1,6 +1,9 @@
 #ifndef MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 #define MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 
+#define MAV_DEBUG
+#define MAV_ENABLE_CMD
+
 #include <Arduino.h>
 #include <USBSerial.h>
 #include <Dynamixel2Arduino.h>
@@ -25,10 +28,10 @@ public:
     void setup();
     bool initiate();
 
-    HookStatus getHookStatus();
-    inline HookStatus getHookMotionStatus() { return hookMotionStatus; }
-    HingeStatus getHingeStatus();
-    inline bool isEngaged() { return getPESensorStatus() == OnOff::ON; }
+    lhm_hook_status_t getHookStatus();
+    inline lhm_hook_status_t getHookMotionStatus() { return hookMotionStatus; }
+    lhm_hinge_status_t getHingeStatus();
+    inline bool isEngaged() { return getPESensorStatus() == ON; }
     bool isAtLandingPosition();
     MotionSequenceStatusType getMotionSequenceStatus();
     
@@ -46,17 +49,17 @@ public:
 private:
     Dynamixel2Arduino dxl;
     Servo jettisonServo;
-    HookStatus hookMotionStatus;
-    HingeStatus hingeStatus;
+    lhm_hook_status_t hookMotionStatus;
+    lhm_hinge_status_t hingeStatus;
     bool _isInMotionSequence;
     bool _motionSequenceStage;
     MotionSequence currentMotionSequence;
     DXLMotor *motors[3];
 
-    LimitSwitchStatus getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin, bool offlineRetry = true);
-    LimitSwitchStatus getTopLimitSwitchStatus();
-    LimitSwitchStatus getBotLimitSwitchStatus();
-    OnOff getPESensorStatus();
+    lhm_limit_switch_status_t getLimitSwitchStatus(uint8_t on_pin, uint8_t off_pin, bool offlineRetry = true);
+    lhm_limit_switch_status_t getTopLimitSwitchStatus();
+    lhm_limit_switch_status_t getBotLimitSwitchStatus();
+    on_off_t getPESensorStatus();
 
     inline uint8_t digitalReadExt(uint8_t pin)
     {

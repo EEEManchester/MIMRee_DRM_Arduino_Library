@@ -60,7 +60,7 @@ bool LHMController::initiate()
     return result;
 }
 
-HingeStatus LHMController::getHingeStatus()
+lhm_hinge_status_t LHMController::getHingeStatus()
 {
     LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorPitch -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
                      (int)hingeMotorPitch.getLastSetOperatingMode(),
@@ -77,7 +77,7 @@ HingeStatus LHMController::getHingeStatus()
 
     if (!hingeMotorPitch.isOnline() || !hingeMotorRoll.isOnline())
     {
-        return HingeStatus::OFFLINE;
+        return LHM_HINGE_STATUS_OFFLINE;
     }
 
     bool torquePitch = hingeMotorPitch.isTorqueOn();
@@ -85,81 +85,81 @@ HingeStatus LHMController::getHingeStatus()
     if (!torquePitch)
     {
         if (!torqueRoll)
-            return HingeStatus::TAKEOFF_MODE;
+            return LHM_HINGE_STATUS_TAKEOFF_MODE;
         else
-            return HingeStatus::ERROR;
+            return LHM_HINGE_STATUS_ERROR;
     }
     OperatingMode opPitch = hingeMotorPitch.getLastSetOperatingMode();
     OperatingMode opRoll = hingeMotorRoll.getLastSetOperatingMode();
     if (opPitch == OP_CURRENT)
     {
         if (opRoll == OP_CURRENT)
-            return HingeStatus::SWING_REDUCTION;
+            return LHM_HINGE_STATUS_SWING_REDUCTION;
         else
-            return HingeStatus::ERROR;
+            return LHM_HINGE_STATUS_ERROR;
     }
     if (opRoll == OP_POSITION)
     {
         if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
-            return HingeStatus::ERROR;
+            return LHM_HINGE_STATUS_ERROR;
         if (currentMotionSequence.sequenceType() == MotionSequenceType::LANDING)
         {
             MotionSequenceStatusType status = currentMotionSequence.status();
             if (status == MotionSequenceStatusType::COMPLETED)
             {
-                return HingeStatus::LANDING_POSITION_READY;
+                return LHM_HINGE_STATUS_LANDING_POSITION_READY;
             }
             else if (status == MotionSequenceStatusType::BUSY || status == MotionSequenceStatusType::STAGE_COMPLETED)
             {
-                return HingeStatus::LANDING_POSITION_IN_TRANSITION;
+                return LHM_HINGE_STATUS_LANDING_POSITION_IN_TRANSITION;
             }
             else if (status == MotionSequenceStatusType::ERROR)
             {
-                return HingeStatus::ERROR;
+                return LHM_HINGE_STATUS_ERROR;
             }
             else
             {
-                return HingeStatus::UNKNOWN;
+                return LHM_HINGE_STATUS_UNKNOWN;
             }
         }
         else
-            return HingeStatus::ERROR;
+            return LHM_HINGE_STATUS_ERROR;
     }
 }
 
-HookStatus LHMController::getHookStatus()
+lhm_hook_status_t LHMController::getHookStatus()
 {
-    LimitSwitchStatus top_ls = getTopLimitSwitchStatus();
-    LimitSwitchStatus bot_ls = getBotLimitSwitchStatus();
+    lhm_limit_switch_status_t top_ls = getTopLimitSwitchStatus();
+    lhm_limit_switch_status_t bot_ls = getBotLimitSwitchStatus();
     LHM_DEBUG_PRINTF("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
 
-    if (top_ls == LimitSwitchStatus::ERROR || bot_ls == LimitSwitchStatus::ERROR)
-        return HookStatus::ERROR;
-    if (top_ls == LimitSwitchStatus::CLOSED && bot_ls == LimitSwitchStatus::OPEN)
+    if (top_ls == LHM_LS_STATUS_ERROR || bot_ls == LHM_LS_STATUS_ERROR)
+        return LHM_HOOK_STATUS_ERROR;
+    if (top_ls == LHM_LS_STATUS_CLOSED && bot_ls == LHM_LS_STATUS_OPEN)
     {
-        if (hookMotor.isTorqueOn() && hookMotionStatus == HookStatus::CLOSING)
-            return HookStatus::CLOSING;
-        return HookStatus::FULLY_OPEN;
+        if (hookMotor.isTorqueOn() && hookMotionStatus == LHM_HOOK_STATUS_CLOSING)
+            return LHM_HOOK_STATUS_CLOSING;
+        return LHM_HOOK_STATUS_FULLY_OPEN;
     }
-    if (top_ls == LimitSwitchStatus::OPEN && bot_ls == LimitSwitchStatus::CLOSED)
+    if (top_ls == LHM_LS_STATUS_OPEN && bot_ls == LHM_LS_STATUS_CLOSED)
     {
-        if (hookMotor.isTorqueOn() && hookMotionStatus == HookStatus::OPENNING)
-            return HookStatus::OPENNING;
-        return HookStatus::FULLY_CLOSED;
+        if (hookMotor.isTorqueOn() && hookMotionStatus == LHM_HOOK_STATUS_OPENNING)
+            return LHM_HOOK_STATUS_OPENNING;
+        return LHM_HOOK_STATUS_FULLY_CLOSED;
     }
-    if (top_ls == LimitSwitchStatus::CLOSED && bot_ls == LimitSwitchStatus::CLOSED)
+    if (top_ls == LHM_LS_STATUS_CLOSED && bot_ls == LHM_LS_STATUS_CLOSED)
     {
-        return HookStatus::ERROR;
+        return LHM_HOOK_STATUS_ERROR;
     }
-    if (top_ls == LimitSwitchStatus::OFFLINE || bot_ls == LimitSwitchStatus::OFFLINE || !hookMotor.isOnline())
+    if (top_ls == LHM_LS_STATUS_OFFLINE || bot_ls == LHM_LS_STATUS_OFFLINE || !hookMotor.isOnline())
     {
-        return HookStatus::OFFLINE;
+        return LHM_HOOK_STATUS_OFFLINE;
     }
     if (hookMotor.isTorqueOn())
     {
         return hookMotionStatus;
     }
-    return HookStatus::LOOSE;
+    return LHM_HOOK_STATUS_LOOSE;
 }
 
 bool LHMController::setSwingReductionMode()
@@ -228,12 +228,12 @@ bool LHMController::stopHingeMotor()
 
 bool LHMController::openHook()
 {
-    HookStatus hStatus = getHookStatus();
-    if (hStatus == HookStatus::FULLY_OPEN)
+    lhm_hook_status_t hStatus = getHookStatus();
+    if (hStatus == LHM_HOOK_STATUS_FULLY_OPEN)
     {
         return true;
     }
-    if (hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    if (hStatus == LHM_HOOK_STATUS_OFFLINE || hStatus == LHM_HOOK_STATUS_ERROR)
     {
         return false;
     }
@@ -241,19 +241,19 @@ bool LHMController::openHook()
     result = result && hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_OPEN);
     if (result)
     {
-        hookMotionStatus = HookStatus::OPENNING;
+        hookMotionStatus = LHM_HOOK_STATUS_OPENNING;
     }
     return result;
 }
 
 bool LHMController::closeHook()
 {
-    HookStatus hStatus = getHookStatus();
-    if (hStatus == HookStatus::FULLY_CLOSED)
+    lhm_hook_status_t hStatus = getHookStatus();
+    if (hStatus == LHM_HOOK_STATUS_FULLY_CLOSED)
     {
         return true;
     }
-    if (hStatus == HookStatus::OFFLINE || hStatus == HookStatus::ERROR)
+    if (hStatus == LHM_HOOK_STATUS_OFFLINE || hStatus == LHM_HOOK_STATUS_ERROR)
     {
         return false;
     }
@@ -262,7 +262,7 @@ bool LHMController::closeHook()
     result = result && hookMotor.setGoalVelocity(VELOCITY_HOOK_MOTOR_CLOSE);
     if (result)
     {
-        hookMotionStatus = HookStatus::CLOSING;
+        hookMotionStatus = LHM_HOOK_STATUS_CLOSING;
     }
     return result;
 }
@@ -274,7 +274,7 @@ bool LHMController::stopHookMotor()
     result = hookMotor.setTorqueOff() && result;
     if (result)
     {
-        hookMotionStatus = HookStatus::UNKNOWN;
+        hookMotionStatus = LHM_HOOK_STATUS_UNKNOWN;
     }
     return result;
 }
@@ -299,27 +299,27 @@ bool LHMController::lockLHM()
     return true;
 }
 
-LimitSwitchStatus LHMController::getBotLimitSwitchStatus()
+lhm_limit_switch_status_t LHMController::getBotLimitSwitchStatus()
 {
     return getLimitSwitchStatus(PIN_LIMIT_SWITCH_CLOSED_BOT, PIN_LIMIT_SWITCH_OPEN_BOT);
 }
 
-LimitSwitchStatus LHMController::getTopLimitSwitchStatus()
+lhm_limit_switch_status_t LHMController::getTopLimitSwitchStatus()
 {
     return getLimitSwitchStatus(PIN_LIMIT_SWITCH_CLOSED_TOP, PIN_LIMIT_SWITCH_OPEN_TOP);
 }
 
-LimitSwitchStatus LHMController::getLimitSwitchStatus(uint8_t closed_pin, uint8_t open_pin, bool offlineRetry)
+lhm_limit_switch_status_t LHMController::getLimitSwitchStatus(uint8_t closed_pin, uint8_t open_pin, bool offlineRetry)
 {
     bool closed_pin_on = digitalReadExt(closed_pin) == HIGH;
     bool open_pin_on = digitalReadExt(open_pin) == HIGH;
-    LimitSwitchStatus status;
+    lhm_limit_switch_status_t status;
     if (closed_pin_on && !open_pin_on)
-        status = LimitSwitchStatus::CLOSED;
+        status = LHM_LS_STATUS_CLOSED;
     else if (!closed_pin_on && open_pin_on)
-        status = LimitSwitchStatus::OPEN;
+        status = LHM_LS_STATUS_OPEN;
     else if (closed_pin_on && open_pin_on)
-        status = LimitSwitchStatus::ERROR;
+        status = LHM_LS_STATUS_ERROR;
     else if (offlineRetry)
     {
         delay(10);
@@ -327,17 +327,17 @@ LimitSwitchStatus LHMController::getLimitSwitchStatus(uint8_t closed_pin, uint8_
     }
     else
     {
-        status = LimitSwitchStatus::OFFLINE;
+        status = LHM_LS_STATUS_OFFLINE;
     }
     LHM_DEBUG_PRINTF("LHMController::getLimitSwitchStatus::pin[%d & %d] -> %d\n", closed_pin, open_pin, (int)status);
     return status;
 }
 
-OnOff LHMController::getPESensorStatus()
+on_off_t LHMController::getPESensorStatus()
 {
     if (digitalReadExt(PIN_PE_SENSOR) == HIGH)
     {
-        return OnOff::ON;
+        return ON;
     }
-    return OnOff::OFF;
+    return OFF;
 }

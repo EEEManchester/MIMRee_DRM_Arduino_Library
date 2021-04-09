@@ -21,7 +21,7 @@ public:
                      ledBlue(LEDController(PIN_LED_BLUE, true))
     {
     }
-
+    virtual ~OpenCM904EXP() {}
     LEDController ledStat;
     LEDController ledRed;
     LEDController ledGreen;

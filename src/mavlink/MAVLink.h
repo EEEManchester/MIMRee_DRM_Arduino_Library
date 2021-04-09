@@ -21,7 +21,7 @@
 
 const uint8_t MIMREE_UOM_MAV_TYPE = MAV_TYPE_QUADROTOR;
 const uint8_t MIMREE_UOM_AUTOPILOT_TYPE = MAV_AUTOPILOT_INVALID;
-const uint8_t MAV_DATA_TO_STREAM = MAV_DATA_STREAM_ALL;
+const uint8_t MAV_DATA_TO_STREAM = MAV_DATA_STREAM_POSITION;
 const uint16_t MAV_DATA_REQUEST_RATE_HZ = 5;
 const uint32_t MAV_DEFAULT_TIME_OUT = 1000/MAV_DATA_REQUEST_RATE_HZ*3;
 const mavlink_channel_t MAV_CHANNEL = MAVLINK_COMM_0;
@@ -38,14 +38,18 @@ public:
     void sendHeartbeat();
     bool readHeartbeat();
     void requestStream();
-    bool confirmHeartbeat(uint32_t timeoutMS=MAV_DEFAULT_TIME_OUT);
+    void setMessageInterval(uint16_t msgid, uint32_t interval);
+    inline void setDebugVectInterval(uint32_t interval) { setMessageInterval(MAVLINK_MSG_ID_DEBUG_VECT, interval);}
+    bool confirmHandshake(uint32_t timeoutMS=MAV_DEFAULT_TIME_OUT);
     void sendDebug(uint32_t timestamp, uint8_t index, float value);
     void sendDebugVect(char &name, uint32_t timestamp, float x, float y, float z);
     mavlink_debug_t unpackMessageToDebug(mavlink_message_t *msg);
     mavlink_debug_vect_t unpackMessageToDebugVect(mavlink_message_t *msg);
+    void sendCommandAck(uint16_t cmdId, uint8_t result, uint8_t progress, uint8_t cmdParam, uint8_t targetSysid, uint8_t targetCompid);
+    void sendTakeOffCommand();
 
 private:
-    HardwareSerial *_MAVSerial;
+    HardwareSerial *mavSerial;
     uint8_t pixhawk_sysid;
     uint8_t pixhawk_compid;
     uint8_t sysid;

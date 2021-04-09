@@ -15,18 +15,59 @@
 #include "mavlink/MAVLink.h"
 #include "mavlink/c_library_v2/mavlink_types.h"
 
+
+struct MAVMessage
+{
+    inline MAVMessage(lhm_mav_msg_id_t msgId, bool accepted) : msgId(msgId), accepted(accepted)
+    {
+    }
+    virtual ~MAVMessage(){}
+    
+    lhm_mav_msg_id_t msgId;
+    bool accepted;
+
+    mavlink_command_int_t command_int;
+    mavlink_command_ack_t command_ack;
+};
+
+struct MAVCommandIntMessage : public MAVMessage
+{
+    inline MAVCommandIntMessage(mavlink_command_int_t command, bool accepted) : MAVMessage(LHM_MAV_MSG_ID_COMMAND_INT, accepted)
+    {
+        this->command_int = command;
+    }
+};
+
+struct MAVCommandAckMessage : public MAVMessage
+{
+    inline MAVCommandAckMessage(mavlink_command_ack_t ack, bool accepted) : MAVMessage(LHM_MAV_MSG_ID_COMMAND_ACK, accepted)
+    {
+        this->command_ack = ack;
+    }
+};
+
 class LHMMessage
 {
 public:
     LHMMessage(LHMController &controller);
-    inline bool initiate() { return mavlink.initiate(LHM_MAV_BAUDRATE); }
-    int32_t readCommandIn();
-    void sendCommandExecutionFeedback(int32_t cmd, bool isSuccessful);
-    void sendCommandFeedbackReception(int32_t cmd, bool isSuccessful);
-    void sendStatusMessage(HingeStatus hingeStatus, HookStatus hookStatus, uint8_t payload);
+
+    inline bool initiate(uint32_t mavCOMInterval)
+    {
+        if (!mavlink.initiate(LHM_MAV_BAUDRATE))
+        {
+            return false;
+        }
+        mavlink.requestStream();
+        return true;
+    }
+
+    MAVMessage readMAVMessage();
+    void sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress);
+    void sendStatusMessage(lhm_hinge_status_t hingeStatus, lhm_hook_status_t hookStatus, uint8_t payload);
+
+    MAVLink mavlink;
 
 private:
-    MAVLink mavlink;
     LHMController &lhmController;
     uint32_t msgIdHist[256];
     uint8_t msgIdHistPt = 0;
@@ -34,7 +75,7 @@ private:
     inline void addToMsgIdHist(uint32_t msgid)
     {
         msgIdHist[msgIdHistPt] = msgid;
-        msgIdHistPt ++;
+        msgIdHistPt++;
     }
 
     inline void clearMsgIdHist()
