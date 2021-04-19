@@ -3,6 +3,8 @@
 
 #define MAVLINK_CHECK_MESSAGE_LENGTH
 
+#define MAV_DEBUG
+
 #ifdef MAV_DEBUG
 #define MAV_DEBUG_PRINTF(fmt, ...) Serial.printf(fmt, ##__VA_ARGS__)
 #define MAV_DEBUG_PRINTLN(a) Serial.println(a)
@@ -19,13 +21,12 @@
 #include "c_library_v2/mavlink_types.h"
 #include "c_library_v2/protocol.h"
 
-const uint8_t MIMREE_UOM_MAV_TYPE = MAV_TYPE_QUADROTOR;
+const uint8_t MIMREE_UOM_MAV_TYPE = MAV_TYPE_OCTOROTOR;
 const uint8_t MIMREE_UOM_AUTOPILOT_TYPE = MAV_AUTOPILOT_INVALID;
-const uint8_t MAV_DATA_TO_STREAM = MAV_DATA_STREAM_POSITION;
+const uint8_t MAV_DATA_TO_STREAM = MAV_DATA_STREAM_ALL;
 const uint16_t MAV_DATA_REQUEST_RATE_HZ = 5;
 const uint32_t MAV_DEFAULT_TIME_OUT = 1000/MAV_DATA_REQUEST_RATE_HZ*3;
 const mavlink_channel_t MAV_CHANNEL = MAVLINK_COMM_0;
-
 
 class MAVLink
 {

@@ -26,7 +26,7 @@
 #define PIN_JETTISON_SERVO_PWM 6
 
 //Communication
-#define LHM_MAV_SYS_ID 1
+#define LHM_MAV_SYS_ID 2
 #define LHM_MAV_COMP_ID MAV_COMP_ID_USER31
 #define LHM_MAV_BAUDRATE 57600
 #define GCS_MAV_COMP_ID 100

@@ -38,11 +38,12 @@ MAVMessage LHMMessage::readMAVMessage()
 
     if (msg.msgid == MAVLINK_MSG_ID_COMMAND_ACK)
     {
+        DEBUG_SERIAL.printf("ack");
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         if (ack.target_component != LHM_MAV_COMP_ID)
         {
-            MAV_DEBUG_PRINTF("LHMMessage::readMAVMessage: [I][NFU] command_ack [seq:%d] from [%d-%d] to [%d-%d]\n", msg.seq, msg.sysid, msg.compid, ack.target_system, ack.target_component);
+            DEBUG_SERIAL.printf("LHMMessage::readMAVMessage: [I][NFU] command_ack [seq:%d] from [%d-%d] to [%d-%d]\n", msg.seq, msg.sysid, msg.compid, ack.target_system, ack.target_component);
             return MAVCommandAckMessage(ack, false);
         }
         DEBUG_SERIAL.printf("LHMMessage::readMAVMessage: [I] command_ack [seq:%d] [cmd:%d re:%d prog:%d] from [%d-%d] to [%d-%d]\n", msg.seq, ack.command, ack.result, ack.progress, msg.sysid, msg.compid, ack.target_system, ack.target_component);
@@ -53,9 +54,11 @@ MAVMessage LHMMessage::readMAVMessage()
     {
         mavlink_command_int_t command;
         mavlink_msg_command_int_decode(&msg, &command);
+        DEBUG_SERIAL.printf("LHMMessage::readMAVMessage: [I][NFU] command_int [seq:%d] [cmd:%d] from [%d-%d] to [%d-%d]\n", msg.seq, command.command, msg.sysid, msg.compid, command.target_system, command.target_component);
+            
         if (command.target_component != LHM_MAV_COMP_ID)
         {
-            MAV_DEBUG_PRINTF("LHMMessage::readMAVMessage: [I][NFU] command_int [seq:%d] [cmd:%d] from [%d-%d] to [%d-%d]\n", msg.seq, command.command, msg.sysid, msg.compid, ack.target_system, ack.target_component);
+            DEBUG_SERIAL.printf("LHMMessage::readMAVMessage: [I][NFU] command_int [seq:%d] [cmd:%d] from [%d-%d] to [%d-%d]\n", msg.seq, command.command, msg.sysid, msg.compid, command.target_system, command.target_component);
             return MAVCommandIntMessage(command, false);
         }
         bool accepted = false;

@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
+const int SEND_HEARTBEAT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 1;
 
 LHMController lhmController = LHMController();
@@ -13,7 +14,7 @@ LHMMessage lhmMsg = LHMMessage(lhmController);
 void setup()
 {
   DEBUG_SERIAL.begin(1000000);
-  // waitDebugSerial();
+  waitDebugSerial();
 
   lhmController.setup();
   while (!lhmMsg.initiate(1))
@@ -31,13 +32,14 @@ void setup()
     lhmController.ledStat.flash(10, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
   }
 
-  // testSendTakeoffCommand();
+  testSendTakeoffCommand();
 
   Serial.println("【Setup】Setup complete.");
 }
 
 long prevStatusReportTime = 0;
 long prevCommandInCheckTime = 0;
+long prevSendHeartbeatTime = 0;
 lhm_hinge_status_t hgStatus;
 lhm_hook_status_t hkStatus;
 long hookMotionStopDelay = 100;
@@ -48,6 +50,7 @@ void loop()
 {
   lhmController.loopAllLED();
   reportStatus();
+  sendHeartBeat();
   checkCommandIn();
   trackHingeTransition();
   checkJettisonButton();
@@ -61,6 +64,21 @@ inline bool isTimeToReportStatus()
 inline bool isTimeToCheckCommandIn()
 {
   return ((int)millis() - prevCommandInCheckTime > COMMAND_IN_CHECK_INTERVAL);
+}
+
+inline bool isTimeToSendHeartbeat()
+{
+  return ((int)millis() - prevSendHeartbeatTime > SEND_HEARTBEAT_INTERVAL);
+}
+
+void sendHeartBeat()
+{
+  if (!isTimeToSendHeartbeat())
+  {
+    return;
+  }
+  prevSendHeartbeatTime = millis();
+  lhmMsg.mavlink.sendHeartbeat();
 }
 
 void reportStatus()

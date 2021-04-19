@@ -24,8 +24,10 @@ bool MAVLink::initiate(unsigned long baudrate)
 bool MAVLink::readMessage(mavlink_message_t *msg)
 {
     mavlink_status_t status;
+    bool hasMessage = false;
     while (mavSerial->available() > 0)
     {
+        hasMessage = true;
         uint8_t ch = mavSerial->read();
 
         if (mavlink_parse_char(MAV_CHANNEL, ch, msg, &status))
@@ -33,10 +35,11 @@ bool MAVLink::readMessage(mavlink_message_t *msg)
             MAV_DEBUG_PRINTF("MAVLink::readMessage: [C] id=[%d] seq=[%d] sid=%d cid=%d | STATUS: mr=%d, bo=%d, pe=%d, ps=%d, pi=%d, crs=%d, cts=%d, prsc=%d, prdc=%d, f=%d, sw=%d\n", msg->msgid, msg->seq, msg->sysid, msg->compid, status.msg_received, status.buffer_overrun, status.parse_error, (int)status.parse_state, status.packet_idx, status.current_rx_seq, status.current_tx_seq, status.packet_rx_success_count, status.packet_rx_drop_count, status.flags, status.signature_wait);
             return true;
         }
-        if (msg->msgid == 0)
-            MAV_DEBUG_PRINTF("MAVLink::readMessage: [U] id=[%d] seq=[%d] sid=%d cid=%d | STATUS: mr=%d, bo=%d, pe=%d, ps=%d, pi=%d, crs=%d, cts=%d, prsc=%d, prdc=%d, f=%d, sw=%d\n", msg->msgid, msg->seq, msg->sysid, msg->compid, status.msg_received, status.buffer_overrun, status.parse_error, (int)status.parse_state, status.packet_idx, status.current_rx_seq, status.current_tx_seq, status.packet_rx_success_count, status.packet_rx_drop_count, status.flags, status.signature_wait);
+        // if (msg->msgid == 0)
+            // MAV_DEBUG_PRINTF("MAVLink::readMessage: [U] id=[%d] seq=[%d] sid=%d cid=%d | STATUS: mr=%d, bo=%d, pe=%d, ps=%d, pi=%d, crs=%d, cts=%d, prsc=%d, prdc=%d, f=%d, sw=%d\n", msg->msgid, msg->seq, msg->sysid, msg->compid, status.msg_received, status.buffer_overrun, status.parse_error, (int)status.parse_state, status.packet_idx, status.current_rx_seq, status.current_tx_seq, status.packet_rx_success_count, status.packet_rx_drop_count, status.flags, status.signature_wait);
     }
-    MAV_DEBUG_PRINTLN("MAVLink::readMessage: Serial buffer ends with none or incomplete message.");
+    // if (hasMessage)
+    //     MAV_DEBUG_PRINTLN("MAVLink::readMessage: Serial buffer ends with incomplete message.");
     return false;
 }
 
