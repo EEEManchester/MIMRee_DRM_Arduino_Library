@@ -3,7 +3,9 @@
 
 #define MAVLINK_CHECK_MESSAGE_LENGTH
 
-#define MAV_DEBUG
+// #define MAV_DEBUG
+
+#define MAVLINK_VERSION 2
 
 #ifdef MAV_DEBUG
 #define MAV_DEBUG_PRINTF(fmt, ...) Serial.printf(fmt, ##__VA_ARGS__)
@@ -21,7 +23,7 @@
 #include "c_library_v2/mavlink_types.h"
 #include "c_library_v2/protocol.h"
 
-const uint8_t MIMREE_UOM_MAV_TYPE = MAV_TYPE_OCTOROTOR;
+const uint8_t MIMREE_UOM_MAV_TYPE = MAV_TYPE_ONBOARD_CONTROLLER;
 const uint8_t MIMREE_UOM_AUTOPILOT_TYPE = MAV_AUTOPILOT_INVALID;
 const uint8_t MAV_DATA_TO_STREAM = MAV_DATA_STREAM_ALL;
 const uint16_t MAV_DATA_REQUEST_RATE_HZ = 5;
@@ -31,14 +33,12 @@ const mavlink_channel_t MAV_CHANNEL = MAVLINK_COMM_0;
 class MAVLink
 {
 public:
-    MAVLink(HardwareSerial &hs, uint8_t sysid, uint8_t compid);
+    MAVLink(HardwareSerial &hs, uint8_t mySysID, uint8_t myCompID);
     bool initiate(unsigned long baudrate);
     bool readMessage(mavlink_message_t *msg);
     void sendMessage(mavlink_message_t *msg);
     bool waitMessage(mavlink_message_t *msg, uint32_t msgId, uint32_t timeoutMS=MAV_DEFAULT_TIME_OUT);
-    void sendHeartbeat();
-    bool readHeartbeat();
-    void requestStream();
+    void requestStream(uint8_t targetSysID, uint8_t targetCompID);
     void setMessageInterval(uint16_t msgid, uint32_t interval);
     inline void setDebugVectInterval(uint32_t interval) { setMessageInterval(MAVLINK_MSG_ID_DEBUG_VECT, interval);}
     bool confirmHandshake(uint32_t timeoutMS=MAV_DEFAULT_TIME_OUT);
@@ -47,14 +47,15 @@ public:
     mavlink_debug_t unpackMessageToDebug(mavlink_message_t *msg);
     mavlink_debug_vect_t unpackMessageToDebugVect(mavlink_message_t *msg);
     void sendCommandAck(uint16_t cmdId, uint8_t result, uint8_t progress, uint8_t cmdParam, uint8_t targetSysid, uint8_t targetCompid);
-    void sendTakeOffCommand();
+    void sendTakeOffCommand(uint8_t targetSysID, uint8_t targetCompID);
+    void sendHeartbeat();
+    mavlink_heartbeat_t readHeartbeat(mavlink_message_t *msg);
+    void askProtocolVersion(uint8_t targetSysID, uint8_t targetCompID);
 
 private:
     HardwareSerial *mavSerial;
-    uint8_t pixhawk_sysid;
-    uint8_t pixhawk_compid;
-    uint8_t sysid;
-    uint8_t compid;
+    uint8_t mySysID;
+    uint8_t myCompID;
 };
 
 #endif

@@ -17,31 +17,40 @@
 
 struct MAVMessage
 {
-    inline MAVMessage(lhm_mav_msg_id_t msgId, bool accepted) : msgId(msgId), accepted(accepted)
+    inline MAVMessage(uint32_t msgId, bool accepted) : msgId(msgId), accepted(accepted)
     {
     }
     virtual ~MAVMessage() {}
 
-    lhm_mav_msg_id_t msgId;
+    uint32_t msgId;
     bool accepted;
 
-    mavlink_command_int_t command_int;
-    mavlink_command_ack_t command_ack;
+    // mavlink_command_int_t command_int;
+    // mavlink_command_ack_t command_ack;
+    mavlink_button_change_t button_change;
 };
 
-struct MAVCommandIntMessage : public MAVMessage
-{
-    inline MAVCommandIntMessage(mavlink_command_int_t command, bool accepted) : MAVMessage(LHM_MAV_MSG_ID_COMMAND_INT, accepted)
-    {
-        this->command_int = command;
-    }
-};
+// struct MAVCommandIntMessage : public MAVMessage
+// {
+//     inline MAVCommandIntMessage(mavlink_command_int_t command, bool accepted) : MAVMessage(MAVLINK_MSG_ID_COMMAND_INT, accepted)
+//     {
+//         this->command_int = command;
+//     }
+// };
 
-struct MAVCommandAckMessage : public MAVMessage
+// struct MAVCommandAckMessage : public MAVMessage
+// {
+//     inline MAVCommandAckMessage(mavlink_command_ack_t ack, bool accepted) : MAVMessage(MAVLINK_MSG_ID_COMMAND_ACK, accepted)
+//     {
+//         this->command_ack = ack;
+//     }
+// };
+
+struct MAVButtonChangeMessage : public MAVMessage
 {
-    inline MAVCommandAckMessage(mavlink_command_ack_t ack, bool accepted) : MAVMessage(LHM_MAV_MSG_ID_COMMAND_ACK, accepted)
+    inline MAVButtonChangeMessage(mavlink_button_change_t bc, bool accepted) : MAVMessage(MAVLINK_MSG_ID_BUTTON_CHANGE, accepted)
     {
-        this->command_ack = ack;
+        this-> button_change = bc;
     }
 };
 
@@ -56,11 +65,13 @@ public:
         {
             return false;
         }
-        mavlink.requestStream();
+        // mavlink.requestStream(255U, 0U);
+        // mavlink.requestStream(1U, 1U);
         return true;
     }
 
     MAVMessage readMAVMessage();
+    MAVButtonChangeMessage readButtonChangeMessage(mavlink_message_t *msg);
     void sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress);
     void sendStatusMessage(lhm_hinge_status_t hingeStatus, lhm_hook_status_t hookStatus, uint8_t payload);
 

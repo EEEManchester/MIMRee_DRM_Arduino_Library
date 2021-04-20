@@ -5,22 +5,40 @@
 #include <Arduino.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
-const int SEND_HEARTBEAT_INTERVAL = 1000;
+const int SEND_HEARTBEAT_INTERVAL = 50000000;
 const int COMMAND_IN_CHECK_INTERVAL = 1;
+
+const int MAV_COM_INITIATE_INTERVAL = 1000;
+int lastMAVComInitiateTime = 0;
 
 LHMController lhmController = LHMController();
 LHMMessage lhmMsg = LHMMessage(lhmController);
 
+mavlink_system_t mavlink_system = {
+    LHM_MAV_SYS_ID,
+    LHM_MAV_COMP_ID
+};
+
 void setup()
 {
   DEBUG_SERIAL.begin(1000000);
-  waitDebugSerial();
+  // waitDebugSerial();
 
   lhmController.setup();
-  while (!lhmMsg.initiate(1))
+  while (true)
   {
-    lhmController.ledRed.syncBlink(2, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
-    delay(1000);
+    if (millis() - lastMAVComInitiateTime > MAV_COM_INITIATE_INTERVAL)
+    {
+      bool result = lhmMsg.initiate(1);
+      lhmController.ledRed.syncBlink(2, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
+      lastMAVComInitiateTime = millis();
+      if (result)
+      {
+        break;
+      }
+    }
+    
+    checkJettisonButton();
   }
 
   if (lhmController.initiate())
@@ -32,7 +50,7 @@ void setup()
     lhmController.ledStat.flash(10, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
   }
 
-  testSendTakeoffCommand();
+  // askProtocolVersion();
 
   Serial.println("【Setup】Setup complete.");
 }
@@ -117,7 +135,7 @@ inline bool validateCommand(MAVMessage &msg)
   {
     return false;
   }
-  if (msg.msgId != LHM_MAV_MSG_ID_COMMAND_INT)
+  if (msg.msgId != MAVLINK_MSG_ID_BUTTON_CHANGE)
   {
     return false;
   }
@@ -127,7 +145,7 @@ inline bool validateCommand(MAVMessage &msg)
 void processCommand(MAVMessage &msg)
 {
   bool result = false;
-  uint8_t cmd = (uint8_t)msg.command_int.param1;
+  uint8_t cmd = msg.button_change.state;
   switch (cmd)
   {
   case LHM_CMD_ID_JETTISON:
@@ -271,22 +289,18 @@ void checkJettisonButton()
   }
 }
 
-void testSendTakeoffCommand()
+void askProtocolVersion()
 {
-  lhmMsg.mavlink.sendTakeOffCommand();
+  lhmMsg.mavlink.askProtocolVersion(1U, 1U);
+  delay(1000);
+  lhmMsg.mavlink.sendTakeOffCommand(1U, 1U);
   while (1)
   {
-    delay(100);
+    delay(1);
     MAVMessage msg = lhmMsg.readMAVMessage();
-    if (msg.accepted && msg.msgId == LHM_MAV_MSG_ID_COMMAND_ACK)
+    if (msg.accepted && msg.msgId == MAVLINK_MSG_ID_PROTOCOL_VERSION)
     {
-      Serial.printf("msg: (accepted:%d, msgid:%d) (cmd:%d, res:%d, prog:%d)\n", msg.accepted, msg.msgId, msg.command_ack.command, msg.command_ack.result, msg.command_ack.progress);
-      if (msg.command_ack.command == 22U)
-        break;
-    }
-    else
-    {
-      Serial.printf("msg: (%d, %d)\n", msg.accepted, msg.msgId);
+      break;
     }
   }
 }
