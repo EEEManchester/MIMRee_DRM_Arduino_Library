@@ -6,10 +6,11 @@
 
 #include "DxlMotor.h"
 #include "OlamDataTable.h"
+#include "OpenCM904EXP.h"
 #include "LineTensionController.h"
 #include "utilities/LongShortPressButton.h"
 
-class OLAMController
+class OLAMController : public OpenCM904EXP
 {
 public:
     OLAMController();
