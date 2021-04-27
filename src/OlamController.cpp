@@ -8,17 +8,22 @@ OLAMController::OLAMController()
 {
 }
 
-void OLAMController::initiate()
+void OLAMController::setup()
 {
     dxl.begin(DXL_BAUD_RATE);
     dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION);
 
-    ltcMotor.reboot();
-    ltcMotor.setVelocityLimit(TC_VELOCITY_MAX);
     pinMode(TC_PIN_LIMIT_SWITCH_LOW_NO, INPUT_PULLUP);
     pinMode(TC_PIN_LIMIT_SWITCH_LOW_NC, INPUT_PULLUP);
     pinMode(TC_PIN_LIMIT_SWITCH_HIGH_NC, INPUT_PULLUP);
     pinMode(TC_PIN_LIMIT_SWITCH_HIGH_NO, INPUT_PULLUP);
-    homeButton.setup();
-    engagementButton.setup();
+
+    setupOnBoardDevices();
+}
+
+bool OLAMController::initiate()
+{
+    bool result = ltcMotor.reboot();
+    result = result & ltcMotor.setVelocityLimit(TC_VELOCITY_MAX);
+    DEBUG_SERIAL.println(result ? "OLAMController::initiate: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
 }

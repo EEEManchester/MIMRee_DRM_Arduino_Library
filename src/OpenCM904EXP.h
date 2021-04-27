@@ -34,7 +34,7 @@ public:
         ledGreen.setup();
         ledBlue.setup();
         pinMode(PIN_BUTTON_1, INPUT_PULLDOWN);
-        pinMode(PIN_BUTTON_1, INPUT_PULLDOWN);
+        pinMode(PIN_BUTTON_2, INPUT_PULLDOWN);
 
         ledStat.set(LED_OFF_REVERSED);
         ledRed.set(LED_OFF_REVERSED);

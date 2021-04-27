@@ -5,25 +5,6 @@ LineTensionController::LineTensionController(DXLMotor &ltcMotor)
 {
 }
 
-bool LineTensionController::run(LineTensionControlCommandType command)
-{
-    switch (command)
-    {
-    case TC_DETENSION:
-        return detension();
-    case TC_HOME:
-        return holdHome();
-    case TC_PREPARE_FOR_ENGAGEMENT:
-        return prepareEngagement();
-    case TC_POWER_OFF:
-        return powerOff();
-    case TC_HOLD_POSITION:
-        return holdPosition();
-    default:
-        return false;
-    }
-}
-
 bool LineTensionController::holdPosition()
 {
     bool result = ltcMotor.setOperatingMode(OP_EXTENDED_POSITION);
@@ -31,7 +12,8 @@ bool LineTensionController::holdPosition()
     {
         return false;
     }
-    return ltcMotor.isTorqueOn();
+    _mode = OLAM_TC_POSITION_HOLDING;
+    return ltcMotor.setTorqueOn();
 }
 
 bool LineTensionController::powerOff()
@@ -39,7 +21,7 @@ bool LineTensionController::powerOff()
     bool result = ltcMotor.setTorqueOff();
     if (result)
     {
-        _mode = TC_POWERED_OFF;
+        _mode = OLAM_TC_POWERED_OFF;
     }
     return result;
 }
@@ -52,25 +34,25 @@ bool LineTensionController::detension()
         return false;
     }
     ltcMotor.dxl.torqueOff(ltcMotor.getId());
-    _mode = TC_POWERED_OFF;
+    _mode = OLAM_TC_POWERED_OFF;
     return true;
 }
 
 bool LineTensionController::_detension()
 {
-    LineStatusType lsType = getLineStatus();
-    if (lsType == LINE_IN_TENSION)
+    uint8_t lsType = getLineStatus();
+    if (lsType == OLAM_LINE_IN_TENSION)
     {
         return runTillLineIsLoose(TC_VELOCITY_INITIAL, TC_TENSIONING_ROT_DIR * -1);
     }
-    if (lsType == LINE_IN_TENSION_REVERSED)
+    if (lsType == OLAM_LINE_IN_TENSION_REVERSED)
     {
         return runTillLineIsLoose(TC_VELOCITY_INITIAL, TC_TENSIONING_ROT_DIR);
     }
     return true;
 }
 
-bool LineTensionController::holdHome()
+bool LineTensionController::goToHomeAndHold()
 {
     if (!_home())
     {
@@ -84,7 +66,7 @@ bool LineTensionController::holdHome()
         softEmergencyStop("LineTensionController::holdHome: Home acquired but not able to hold position. Error occurred.");
         return false;
     }
-    _mode = TC_POSITION_HOLDING;
+    _mode = OLAM_TC_POSITION_HOLDING;
     return true;
 }
 
@@ -92,12 +74,12 @@ bool LineTensionController::_home()
 {
     DEBUG_SERIAL.println("LineTensionController::holdHome: Starting home sequence.");
     delay(2);
-    LineStatusType lsType = getLineStatus();
-    if (lsType == LINE_STATUS_ERROR || lsType == LINE_STATUS_UNKNOWN)
+    uint8_t lsType = getLineStatus();
+    if (lsType == OLAM_LINE_STATUS_ERROR || lsType == OLAM_LINE_STATUS_UNKNOWN)
     {
         return false;
     }
-    if (lsType == LINE_IN_TENSION_REVERSED || lsType == LINE_LOOSE)
+    if (lsType == OLAM_LINE_IN_TENSION_REVERSED || lsType == OLAM_LINE_LOOSE)
     {
         DEBUG_SERIAL.println("LineTensionController::holdHome: Pickup line is loose or tensioned in reversed direction. Begin to return to holdHome.");
         delay(2);
@@ -160,7 +142,7 @@ bool LineTensionController::_prepareEngagement()
     return true;
 }
 
-LineStatusType LineTensionController::getLineStatus(bool retryOnError)
+uint8_t LineTensionController::getLineStatus(bool retryOnError)
 {
     int lsHighNO = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NO) == LOW;
     int lsHighNC = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NC) == LOW;
@@ -168,29 +150,29 @@ LineStatusType LineTensionController::getLineStatus(bool retryOnError)
     int lsLowNC = digitalRead(TC_PIN_LIMIT_SWITCH_LOW_NC) == LOW;
     if (!lsHighNO && lsHighNC && !lsLowNO && lsLowNC)
     {
-        return LINE_LOOSE;
+        return OLAM_LINE_LOOSE;
     }
     if (lsHighNO && !lsHighNC && !lsLowNO && lsLowNC)
     {
-        return LINE_IN_TENSION;
+        return OLAM_LINE_IN_TENSION;
     }
     if (!lsHighNO && lsHighNC && lsLowNO && !lsLowNC)
     {
-        return LINE_IN_TENSION_REVERSED;
+        return OLAM_LINE_IN_TENSION_REVERSED;
     }
     if (retryOnError)
     {
         delay(50);
         return getLineStatus(false);
     }
-    return LINE_STATUS_ERROR;
+    return OLAM_LINE_STATUS_ERROR;
 }
 
 bool LineTensionController::runTillLineInTension(int32_t speed)
 {
-    LineStatusType lsType = getLineStatus();
+    uint8_t lsType = getLineStatus();
     DEBUG_SERIAL.printf("LineTensionController::runTillLineInTension: getLineStatus is %d\n", lsType);
-    if (lsType == LINE_IN_TENSION)
+    if (lsType == OLAM_LINE_IN_TENSION)
     {
         DEBUG_SERIAL.println("LineTensionController::runTillLineInTension: Pickup line is already in tension. Skip sequence.");
         delay(10);
@@ -208,9 +190,9 @@ bool LineTensionController::runTillLineInTension(int32_t speed)
     {
         return false;
     }
-    while (lsType != LINE_IN_TENSION)
+    while (lsType != OLAM_LINE_IN_TENSION)
     {
-        if (lsType != LINE_LOOSE)
+        if (lsType != OLAM_LINE_LOOSE)
         {
             return false;
         }
@@ -228,8 +210,8 @@ bool LineTensionController::runTillLineInTension(int32_t speed)
 
 bool LineTensionController::runTillLineIsLoose(int32_t speed, int8_t dir)
 {
-    LineStatusType lsType = getLineStatus();
-    if (lsType == LINE_LOOSE)
+    uint8_t lsType = getLineStatus();
+    if (lsType == OLAM_LINE_LOOSE)
     {
         DEBUG_SERIAL.println("LineTensionController::runTillLineIsLoose: Pickup line is already loose. Skip sequence.");
         return true;
@@ -244,23 +226,8 @@ bool LineTensionController::runTillLineIsLoose(int32_t speed, int8_t dir)
         return false;
     }
     lsType = getLineStatus();
-    while (lsType != LINE_LOOSE)
+    while (lsType != OLAM_LINE_LOOSE)
     {
-        // DEBUG_SERIAL.printf("LineTensionController::runTillLineIsLoose: Line status: %d\n", lsType);
-        // if (dir == TC_TENSIONING_ROT_DIR)
-        // {
-        //     if (lsType != LINE_IN_TENSION_REVERSED)
-        //     {
-        //         return false;
-        //     }
-        // }
-        // else
-        // {
-        //     if (lsType != LINE_IN_TENSION)
-        //     {
-        //         return false;
-        //     }
-        // }
         lsType = getLineStatus();
     }
     result = ltcMotor.setTorqueOff();
@@ -280,11 +247,11 @@ bool LineTensionController::softEmergencyStop(char *message)
     DEBUG_SERIAL.println(message);
     if (!result)
     {
-        _mode = TC_ERROR;
+        _mode = OLAM_TC_ERROR;
         DEBUG_SERIAL.println("LineTensionController::softEmergencyStop: Fail to reboot TC motor.");
         return false;
     }
-    _mode = TC_POWERED_OFF;
+    _mode = OLAM_TC_POWERED_OFF;
     DEBUG_SERIAL.println("LineTensionController::softEmergencyStop: TC motor has been rebooted.");
     return true;
 }

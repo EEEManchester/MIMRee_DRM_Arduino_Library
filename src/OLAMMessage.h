@@ -4,13 +4,12 @@
 #define __builtin_va_start(v, l)
 #define __builtin_va_end(v)
 
-#define LHM_DEBUG_ON 1
-
 #include <Arduino.h>
 #include <USBSerial.h>
 
 #include "OlamDataTable.h"
 #include "OlamController.h"
+#include "LineTensionController.h"
 #include "utilities/LEDController.h"
 #include "mavlink/MAVLink.h"
 #include "mavlink/c_library_v2/mavlink_types.h"
@@ -53,8 +52,8 @@ public:
 
     MAVMessage readMAVMessage();
     MAVButtonChangeMessage readButtonChangeMessage(mavlink_message_t *msg);
-    void sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress);
-    void sendStatusMessage();
+    void sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress);
+    void sendStatusMessage(uint8_t lineStatus);
 
     MAVLink mavlink;
 

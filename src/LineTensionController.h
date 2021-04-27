@@ -7,30 +7,21 @@
 #include "OlamDataTable.h"
 #include "DxlMotor.h"
 
-enum LineStatusType
+enum olam_line_status_t: uint8_t
 {
-    LINE_STATUS_ERROR = -2,
-    LINE_STATUS_UNKNOWN,
-    LINE_LOOSE = 0,
-    LINE_IN_TENSION,
-    LINE_IN_TENSION_REVERSED
+    OLAM_LINE_STATUS_ERROR = 0,
+    OLAM_LINE_STATUS_UNKNOWN,
+    OLAM_LINE_LOOSE,
+    OLAM_LINE_IN_TENSION,
+    OLAM_LINE_IN_TENSION_REVERSED
 };
 
-enum LineTensionControlCommandType
+enum olam_tension_control_mode_t: uint8_t
 {
-    TC_UNKNOWN = -1,
-    TC_POWER_OFF,
-    TC_HOLD_POSITION,
-    TC_DETENSION,
-    TC_HOME,
-    TC_PREPARE_FOR_ENGAGEMENT,
-};
-
-enum LineTensionControlModeType
-{
-    TC_ERROR = -1,
-    TC_POWERED_OFF,
-    TC_POSITION_HOLDING
+    OLAM_TC_ERROR = 0,
+    OLAM_TC_POWERED_OFF,
+    OLAM_TC_POSITION_HOLDING,
+    OLAM_TC_ENGAGEMENT_READY
 };
 
 class LineTensionController
@@ -38,13 +29,12 @@ class LineTensionController
 public:
     LineTensionController(DXLMotor &ltcMotor);
 
-    inline LineTensionControlModeType getCurrentMode() { return _mode; }
-    inline bool isInHomeSequence() { return _isInHomeSequence; }
+    inline uint8_t getCurrentMode() { return _mode; }
+    // inline bool isInHomeSequence() { return _isInHomeSequence; }
     inline uint8_t getMotorId() { return ltcMotor.getId(); }
-    LineStatusType getLineStatus(bool retryOnError = true);
-
-    bool run(LineTensionControlCommandType command);
-    bool holdHome();
+    uint8_t getLineStatus(bool retryOnError = true);
+    
+    bool goToHomeAndHold();
     bool prepareEngagement();
     bool detension();
     bool holdPosition();
@@ -52,7 +42,7 @@ public:
 
 private:
     DXLMotor &ltcMotor;
-    LineTensionControlModeType _mode;
+    uint8_t _mode;
     bool _isInHomeSequence;
     bool _home();
     bool _prepareEngagement();

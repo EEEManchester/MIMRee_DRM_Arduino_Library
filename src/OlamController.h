@@ -14,11 +14,14 @@ class OLAMController : public OpenCM904EXP
 {
 public:
     OLAMController();
+
     DXLMotor ltcMotor;
     LineTensionController ltController;
-    void initiate();
     LongShortPressButton homeButton;
     LongShortPressButton engagementButton;
+
+    void setup();
+    bool initiate();
 
 private:
     Dynamixel2Arduino dxl;

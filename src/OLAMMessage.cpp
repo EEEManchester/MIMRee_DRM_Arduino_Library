@@ -1,6 +1,6 @@
 #include "OLAMMessage.h"
 
-OLAMMessage::OLAMMessage(LHMController &controller) : mavlink(MAVLink(COM_SERIAL, LHM_MAV_SYS_ID, LHM_MAV_COMP_ID)), lhmController(controller)
+OLAMMessage::OLAMMessage(OLAMController &controller) : mavlink(MAVLink(COM_SERIAL, OLAM_MAV_SYS_ID, OLAM_MAV_COMP_ID)), olamController(controller)
 {
 }
 
@@ -9,7 +9,7 @@ MAVMessage OLAMMessage::readMAVMessage()
     mavlink_message_t msg;
     if (!mavlink.readMessage(&msg))
     {
-        return MAVMessage(LHM_MAV_MSG_ID_NOT_FOR_US, false);
+        return MAVMessage(OLAM_MAV_MSG_ID_NOT_FOR_US, false);
     }
 
     if (msg.msgid == MAVLINK_MSG_ID_HEARTBEAT)
@@ -36,7 +36,7 @@ MAVMessage OLAMMessage::readMAVMessage()
     }
 
     addToMsgIdHist(msg.msgid);
-    return MAVMessage(LHM_MAV_MSG_ID_NOT_FOR_US, false);
+    return MAVMessage(OLAM_MAV_MSG_ID_NOT_FOR_US, false);
 }
 
 MAVButtonChangeMessage OLAMMessage::readButtonChangeMessage(mavlink_message_t* msg)
@@ -48,26 +48,26 @@ MAVButtonChangeMessage OLAMMessage::readButtonChangeMessage(mavlink_message_t* m
         return MAVButtonChangeMessage(bc, false);
     }
     mavlink_msg_button_change_decode(msg, &bc);
-    if (bc.last_change_ms == LHM_MAV_MSG_BUTTON_CHANGE_PASSCODE)
+    if (bc.last_change_ms == OLAM_MAV_MSG_BUTTON_CHANGE_PASSCODE)
     {
         DEBUG_SERIAL.printf("OLAMMessage::readMAVMessage: [I] button_change [seq:%d] from [%d-%d] (s=[%d])\n", msg->seq, msg->sysid, msg->compid, bc.state);
     }
     return MAVButtonChangeMessage(bc, true);
 }
 
-void OLAMMessage::sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress)
+void OLAMMessage::sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress)
 {
-    if (cmd == LHM_CMD_ID_UNKNOWN || progress== LHM_CMD_PROG_COMMAND_ACK)
+    if (cmd == OLAM_TC_CMD_ID_UNKNOWN)
     {
         return;
     }
-    mavlink.sendCommandAck(cmd, result, progress, 0, LHM_MAV_SYS_ID, GCS_MAV_COMP_ID);
+    mavlink.sendCommandAck(cmd, result, progress, 0, OLAM_MAV_SYS_ID, GCS_MAV_COMP_ID);
 }
 
-void OLAMMessage::sendStatusMessage(lhm_hinge_status_t hingeStatus, lhm_hook_status_t hookStatus, uint8_t payload)
+void OLAMMessage::sendStatusMessage(uint8_t lineStatus)
 {
     char name[10];
-    strcpy(name, LHM_MAV_MSG_DEBUG_VECT_NAME_STATUS_REPORT);
+    strcpy(name, OLAM_MAV_MSG_DEBUG_VECT_NAME_STATUS_REPORT);
     uint32_t timestamp = 0;
-    mavlink.sendDebugVect(*name, timestamp, (float)hingeStatus, (float)hookStatus, (float)payload);
+    mavlink.sendDebugVect(*name, timestamp, lineStatus, 0, 0);//TODO implement this?
 }
