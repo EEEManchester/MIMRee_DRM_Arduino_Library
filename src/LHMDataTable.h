@@ -67,7 +67,7 @@ const uint16_t MOTION_SEQ_LANDING[] = {3, MOTOR_ID_HINGE_ROLL, HINGE_POS_VERTICA
 #define JETTISON_SERVO_VALUE_CLOSE 70
 #define JETTISON_SERVO_VALUE_OPEN 160
 
-enum lhm_command_id_t : uint16_t
+enum lhm_command_id_t : uint8_t
 {
     LHM_CMD_ID_UNKNOWN = 0,
     LHM_CMD_ID_HINGE_POWER_OFF = 60,

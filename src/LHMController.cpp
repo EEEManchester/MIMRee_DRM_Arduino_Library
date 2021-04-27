@@ -100,26 +100,22 @@ lhm_hinge_status_t LHMController::getHingeStatus()
     }
     if (opRoll == OP_POSITION)
     {
-        if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
+        if (currentMotionSequence.sequenceType() == MS_SEQ_TYPE_UNKNOWN)
             return LHM_HINGE_STATUS_ERROR;
-        if (currentMotionSequence.sequenceType() == MotionSequenceType::LANDING)
+        if (currentMotionSequence.sequenceType() == MS_SEQ_TYPE_LANDING)
         {
             MotionSequenceStatusType status = currentMotionSequence.status();
-            if (status == MotionSequenceStatusType::COMPLETED)
+            if (status == MS_SEQ_STATUS_COMPLETED)
             {
                 return LHM_HINGE_STATUS_LANDING_POSITION_READY;
             }
-            else if (status == MotionSequenceStatusType::BUSY || status == MotionSequenceStatusType::STAGE_COMPLETED)
+            else if (status == MS_SEQ_STATUS_BUSY || status == MS_SEQ_STATUS_STAGE_COMPLETED)
             {
                 return LHM_HINGE_STATUS_LANDING_POSITION_IN_TRANSITION;
             }
-            else if (status == MotionSequenceStatusType::ERROR)
-            {
-                return LHM_HINGE_STATUS_ERROR;
-            }
             else
             {
-                return LHM_HINGE_STATUS_UNKNOWN;
+                return LHM_HINGE_STATUS_ERROR;
             }
         }
         else
@@ -176,15 +172,15 @@ bool LHMController::setSwingReductionMode()
 
 bool LHMController::setLandingPosition()
 {
-    currentMotionSequence = MotionSequence(MotionSequenceType::LANDING, motors, MOTION_SEQ_LANDING);
-    return currentMotionSequence.next() == 1;
+    currentMotionSequence = MotionSequence(MS_SEQ_TYPE_LANDING, motors, MOTION_SEQ_LANDING);
+    return nextMotionSequence() == MS_EXE_RE_SUCCESSFUL;
 }
 
 bool LHMController::isAtLandingPosition()
 {
-    if (currentMotionSequence.sequenceType() == MotionSequenceType::LANDING)
+    if (currentMotionSequence.sequenceType() == MS_SEQ_TYPE_LANDING)
     {
-        return currentMotionSequence.status() == MotionSequenceStatusType::COMPLETED;
+        return currentMotionSequence.status() == MS_SEQ_STATUS_COMPLETED;
     }
     else
     {
@@ -194,18 +190,23 @@ bool LHMController::isAtLandingPosition()
 
 MotionSequenceStatusType LHMController::getMotionSequenceStatus()
 {
-    if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
-    {
-        return MotionSequenceStatusType::UNKNOWN;
-    }
     return currentMotionSequence.status();
 }
 
-int8_t LHMController::nextMotionSequence()
-{
-    if (currentMotionSequence.sequenceType() == MotionSequenceType::UNKNOWN)
+MotionSequenceExecusionResultType LHMController::nextMotionSequence()
+{    
+    uint8_t s = getMotionSequenceStatus();
+    if (s == MS_SEQ_STATUS_COMPLETED)
     {
-        return -1;
+        return MS_EXE_RE_SEQUENCE_ENDED;
+    }
+    else if (s == MS_SEQ_STATUS_BUSY)
+    {
+        return MS_EXE_RE_FAILED;
+    }
+    else if (s != MS_SEQ_STATUS_WAITING)
+    {
+        return MS_EXE_RE_ERROR;
     }
     return currentMotionSequence.next();
 }

@@ -38,7 +38,7 @@ public:
     bool setSwingReductionMode();
     bool setTakeoffMode();
     bool setLandingPosition();
-    int8_t nextMotionSequence();
+    MotionSequenceExecusionResultType nextMotionSequence();
     bool stopHingeMotor();
     bool openHook();
     bool closeHook();
