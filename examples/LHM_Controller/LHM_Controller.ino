@@ -208,7 +208,7 @@ void processCommand(MAVMessage &msg)
   }
   last_cmd = cmd;
   last_cmd_time = millis();
-  DEBUG_SERIAL.print("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
+  DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
   lhmMsg.sendCommandFeedback(cmd, result, LHM_CMD_PROG_MISSION_STARTED);
 }
 
@@ -220,14 +220,14 @@ void trackHingeTransition()
   }
   MotionSequenceStatusType status = lhmController.getMotionSequenceStatus();
   // DEBUG_SERIAL.printf("MotionSequenceStatus: %d\n", (int)status);
-
+  uint8_t result = 100;
   switch (status)
   {
   case MS_SEQ_STATUS_COMPLETED:
     hingeInTransition = false;
     break;
   case MS_SEQ_STATUS_STAGE_COMPLETED:
-    uint8_t result = lhmController.nextMotionSequence();
+    result = lhmController.nextMotionSequence();
     // TODO handle result
     break;
   case MS_SEQ_STATUS_BUSY:
