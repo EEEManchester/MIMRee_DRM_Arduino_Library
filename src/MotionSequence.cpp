@@ -17,17 +17,17 @@ MotionSequenceStatusType MotionSequence::status()
     {
         return MS_SEQ_STATUS_UNKNOWN;
     }
-    if (currentStage.stageId() == sequence[0] - 1)
-    {
-        return MS_SEQ_STATUS_COMPLETED;
-    }
+    uint8_t result = currentStage.status();
     if (!currentStage.started())
     {
         return MS_SEQ_STATUS_WAITING;
     }
-    uint8_t result = currentStage.status();
     if (result == MS_STAGE_STATUS_COMPLETED)
     {
+        if (currentStage.stageId() >= sequence[0] - 1)
+        {
+            return MS_SEQ_STATUS_COMPLETED;
+        }
         return MS_SEQ_STATUS_STAGE_COMPLETED;
     }
     else if (result == MS_STAGE_STATUS_NOT_COMPLETED)
