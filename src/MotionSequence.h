@@ -6,20 +6,36 @@
 #include "DxlMotor.h"
 #include "LHMDataTable.h"
 
-enum class MotionSequenceType
+enum MotionSequenceType: uint8_t
 {
-    UNKNOWN = -1,
-    LANDING
+    MS_SEQ_TYPE_UNKNOWN = 0,
+    MS_SEQ_TYPE_LANDING
 };
 
-enum class MotionSequenceStatusType
+enum MotionSequenceStatusType: uint8_t
 {
-    UNKNOWN = -2,
-    ERROR,
-    WAITING = 0,
-    BUSY,
-    STAGE_COMPLETED,
-    COMPLETED
+    MS_SEQ_STATUS_UNKNOWN = 0,
+    MS_SEQ_STATUS_ERROR,
+    MS_SEQ_STATUS_WAITING,
+    MS_SEQ_STATUS_BUSY,
+    MS_SEQ_STATUS_STAGE_COMPLETED,
+    MS_SEQ_STATUS_COMPLETED
+};
+
+enum MotionSequenceStageStatusType: uint8_t
+{
+    MS_STAGE_STATUS_ERROR = 0,
+    MS_STAGE_STATUS_NOT_STARTED,
+    MS_STAGE_STATUS_NOT_COMPLETED,
+    MS_STAGE_STATUS_COMPLETED
+};
+
+enum MotionSequenceExecusionResultType: uint8_t
+{
+    MS_EXE_RE_ERROR = 0,
+    MS_EXE_RE_FAILED,
+    MS_EXE_RE_SUCCESSFUL,
+    MS_EXE_RE_SEQUENCE_ENDED
 };
 
 class Stage
@@ -32,28 +48,8 @@ public:
     inline bool started() { return _started; }
 
     void update(int8_t stageId, DXLMotor *motor, int32_t goalPosition, int32_t accuracy);
-
-    /**
-     * @return -1: error (position goal is not the same as stage goal)
-     *          0: stage not completed
-     *          1: stage completed
-     */
-    int8_t completed();
-
-    /**
-     * @return -1: error
-     *          0: not busy
-     *          1: busy
-     */
-    int8_t busy();
-
-    /**
-     * @return -1: error
-     *          0: execution message not fully sent
-     *          1: execution message fully sent
-     */
-    int8_t execute();
-
+    MotionSequenceStageStatusType status();
+    bool execute();
     void printDebugInfo(String scopeName = "");
 
 private:
@@ -69,21 +65,15 @@ class MotionSequence
 public:
     inline MotionSequence(){};
     MotionSequence(MotionSequenceType type, DXLMotor *motors[], const uint16_t sequence[]);
+
     inline MotionSequenceType sequenceType() { return _sequenceType; }
     inline int8_t currentStageId() { return currentStage.stageId(); }
+
     MotionSequenceStatusType status();
-
-    /**
-     * @return -1: error
-     *          0: failed
-     *          1: successful 
-     *          2: sequence reaches end
-     */
-    int8_t next();
+    MotionSequenceExecusionResultType next();
     void printDebugInfo(String scopeName = "");
-
 private:
-    MotionSequenceType _sequenceType = MotionSequenceType::UNKNOWN;
+    MotionSequenceType _sequenceType = MS_SEQ_TYPE_UNKNOWN;
     DXLMotor **motors;
     const uint16_t *sequence;
     Stage currentStage;

@@ -213,19 +213,19 @@ void trackHingeTransition()
   }
   MotionSequenceStatusType status = lhmController.getMotionSequenceStatus();
   DEBUG_SERIAL.printf("MotionSequenceStatus: %d\n", (int)status);
-
+  uint8_t result;
   switch (status)
   {
-  case MotionSequenceStatusType::COMPLETED:
+  case MS_SEQ_STATUS_COMPLETED:
     hingeInTransition = false;
     break;
-  case MotionSequenceStatusType::STAGE_COMPLETED:
-    lhmController.nextMotionSequence();
+  case MS_SEQ_STATUS_STAGE_COMPLETED:
+    result = lhmController.nextMotionSequence();
     break;
-  case MotionSequenceStatusType::BUSY:
+  case MS_SEQ_STATUS_BUSY:
     break;
-  case MotionSequenceStatusType::ERROR:
-  case MotionSequenceStatusType::UNKNOWN:
+  case MS_SEQ_STATUS_ERROR:
+  case MS_SEQ_STATUS_UNKNOWN:
     hingeInTransition = false;
     break;
   }

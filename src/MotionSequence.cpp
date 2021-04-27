@@ -13,38 +13,38 @@ MotionSequenceStatusType MotionSequence::status()
 {
     printDebugInfo("MotionSequence::status");
     currentStage.printDebugInfo("MotionSequence::status");
+    if (_sequenceType == MS_SEQ_TYPE_UNKNOWN)
+    {
+        return MS_SEQ_STATUS_UNKNOWN;
+    }
     if (currentStage.stageId() == sequence[0] - 1)
     {
-        return MotionSequenceStatusType::COMPLETED;
+        return MS_SEQ_STATUS_COMPLETED;
     }
     if (!currentStage.started())
     {
-        return MotionSequenceStatusType::WAITING;
+        return MS_SEQ_STATUS_WAITING;
     }
-    int8_t result = currentStage.completed();
-    if (result == 1)
+    uint8_t result = currentStage.status();
+    if (result == MS_STAGE_STATUS_COMPLETED)
     {
-        return MotionSequenceStatusType::STAGE_COMPLETED;
+        return MS_SEQ_STATUS_STAGE_COMPLETED;
     }
-    else if (result == 0)
+    else if (result == MS_STAGE_STATUS_NOT_COMPLETED)
     {
-        return MotionSequenceStatusType::BUSY;
+        return MS_SEQ_STATUS_BUSY;
     }
     else
     {
-        return MotionSequenceStatusType::ERROR;
+        return MS_SEQ_STATUS_ERROR;
     }
 }
 
-int8_t MotionSequence::next()
+MotionSequenceExecusionResultType MotionSequence::next()
 {
     printDebugInfo("MotionSequence::next");
     int8_t nextStageId = currentStage.stageId() + 1;
     DXL_DEBUG_PRINTF("MotionSequence::next: Sequence type: %d, Stage ID: %d/%d\n", (int)_sequenceType, nextStageId, sequence[0] - 1);
-    if (nextStageId > sequence[0] - 1)
-    {
-        return 2;
-    }
     uint8_t motorId = sequence[nextStageId * 3 + 1] - 1;
     int32_t goalPos = sequence[nextStageId * 3 + 2];
     int32_t accuracy = sequence[nextStageId * 3 + 3];
@@ -53,7 +53,7 @@ int8_t MotionSequence::next()
     currentStage.update(nextStageId, motors[motorId], goalPos, accuracy);
     int8_t result = currentStage.execute();
     DXL_DEBUG_PRINTF("MotionSequence::next: Result=%d\n", result);
-    return result;
+    return result ? MS_EXE_RE_SUCCESSFUL : MS_EXE_RE_FAILED;
 }
 
 void MotionSequence::printDebugInfo(String scopeName)
@@ -80,31 +80,28 @@ void Stage::update(int8_t stageId, DXLMotor *_motor, int32_t goalPosition, int32
     DXL_DEBUG_PRINTF("Stage::update: [%d]: Motor[%d] -> %d (+/-%d)\n", stageId, motor->getId(), goalPosition, accuracy);
 }
 
-int8_t Stage::completed()
-{
-    if (abs(_goalPosition - motor->getLastSetGoalPosition()) > 0.1)
-    {
-        return -1;
-    }
-
-    return motor->isAtGoalPosition(_accuracy);
-}
-
-int8_t Stage::busy()
+MotionSequenceStageStatusType Stage::status()
 {
     if (!started())
     {
-        return 0;
+        return MS_STAGE_STATUS_NOT_STARTED;
     }
-
-    return completed();
+    if (abs(_goalPosition - motor->getLastSetGoalPosition()) > 0.1)
+    {
+        return MS_STAGE_STATUS_ERROR;
+    }
+    if (motor->isAtGoalPosition(_accuracy))
+    {
+        return MS_STAGE_STATUS_COMPLETED;
+    }
+    return MS_STAGE_STATUS_NOT_COMPLETED;
 }
 
-int8_t Stage::execute()
+bool Stage::execute()
 {
-    if (busy() != 0)
+    if (status() != MS_STAGE_STATUS_NOT_STARTED)
     {
-        return -1;
+        return false;
     }
     bool result = true;
     if (motor->getLastSetOperatingMode() != OP_POSITION)
