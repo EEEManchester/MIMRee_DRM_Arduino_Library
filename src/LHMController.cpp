@@ -29,6 +29,7 @@ void LHMController::setup()
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_TOP, INPUT_PULLDOWN);
+    pinMode(PIN_PE_SENSOR, INPUT_PULLDOWN);
 
     setupOnBoardDevices();
     // btnJet.setup();

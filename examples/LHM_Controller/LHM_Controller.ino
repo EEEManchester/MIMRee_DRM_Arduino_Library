@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
-const int SEND_HEARTBEAT_INTERVAL = 50000000;
+const int SEND_HEARTBEAT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 1;
 
 const int MAV_COM_INITIATE_INTERVAL = 1000;
@@ -71,6 +71,7 @@ void loop()
   sendHeartBeat();
   checkCommandIn();
   trackHingeTransition();
+  trackHookTransition();
   checkJettisonButton();
 }
 
@@ -148,6 +149,7 @@ void processCommand(MAVMessage &msg)
 {
   bool result = false;
   uint8_t cmd = msg.button_change.state;
+  uint32_t sTime = millis();
   switch (cmd)
   {
   case LHM_CMD_ID_HINGE_POWER_OFF:
@@ -200,8 +202,13 @@ void processCommand(MAVMessage &msg)
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_FAILED, LHM_CMD_PROG_COMMAND_ACK);
     return;
   }
+  while (millis() - sTime < 1000)
+  {
+    delay (20);
+  }
   last_cmd = cmd;
   last_cmd_time = millis();
+  DEBUG_SERIAL.print("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
   lhmMsg.sendCommandFeedback(cmd, result, LHM_CMD_PROG_MISSION_STARTED);
 }
 
@@ -212,7 +219,7 @@ void trackHingeTransition()
     return;
   }
   MotionSequenceStatusType status = lhmController.getMotionSequenceStatus();
-  DEBUG_SERIAL.printf("MotionSequenceStatus: %d\n", (int)status);
+  // DEBUG_SERIAL.printf("MotionSequenceStatus: %d\n", (int)status);
 
   switch (status)
   {
