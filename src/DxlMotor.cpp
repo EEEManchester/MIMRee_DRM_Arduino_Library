@@ -72,6 +72,7 @@ bool DXLMotor::setOperatingMode(OperatingMode op)
 {
     if (lastSetOperatingMode == op)
     {
+        DXL_DEBUG_PRINTF("DXLMotor::setOperatingMode:: id[%d] skipped because new value is the same as the previously used value.\n", id);
         return true;
     }
     // For safety concerns, always torque off before setting operating mode.
@@ -133,7 +134,8 @@ bool DXLMotor::setVelocityProfile(int32_t val)
 {
     if (val == lastSetVelocityProfile)
     {
-        return true;
+        // DXL_DEBUG_PRINTF("DXLMotor::setVelocityProfile:: id[%d] skipped because new value is the same as the previously used value.\n", id);
+        // return true;
     }
     bool result = repeatCOM<uint8_t, uint8_t, int32_t, uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_VELOCITY, id, val, 100);
     DXL_DEBUG_PRINTF("DXLMotor::setVelocityProfile:: id[%d] = %d\n", id, result);
@@ -148,7 +150,8 @@ bool DXLMotor::setAccelerationProfile(int32_t val)
 {
     if (val == lastSetAccelerationProfile)
     {
-        return true;
+        // DXL_DEBUG_PRINTF("DXLMotor::setAccelerationProfile:: id[%d] skipped because new value is the same as the previously used value.\n", id);
+        // return true;
     }
     bool result = repeatCOM<uint8_t, uint8_t, int32_t, uint32_t>(&Dynamixel2Arduino::writeControlTableItem, PROFILE_ACCELERATION, id, val, 100);
     DXL_DEBUG_PRINTF("DXLMotor::setAccelerationProfile:: id[%d] = %d\n", id, result);
@@ -251,7 +254,7 @@ bool DXLMotor::setVelocityLimit(int32_t val)
 
 void DXLMotor::resetOPRelatedParamRecords()
 {
-    lastSetAccelerationProfile = -999;
+    lastSetVelocityProfile = -999;
     lastSetAccelerationProfile = -999;
     lastSetGoalCurrent = -999;
     lastSetGoalPosition = -999;
