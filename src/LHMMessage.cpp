@@ -55,7 +55,7 @@ MAVButtonChangeMessage LHMMessage::readButtonChangeMessage(mavlink_message_t* ms
     return MAVButtonChangeMessage(bc, true);
 }
 
-void LHMMessage::sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress)
+void LHMMessage::sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress)
 {
     if (cmd == LHM_CMD_ID_UNKNOWN || progress== LHM_CMD_PROG_COMMAND_ACK)
     {

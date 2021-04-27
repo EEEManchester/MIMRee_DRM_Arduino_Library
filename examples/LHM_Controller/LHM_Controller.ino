@@ -142,27 +142,21 @@ inline bool validateCommand(MAVMessage &msg)
   return true;
 }
 
+uint8_t last_cmd = LHM_CMD_ID_UNKNOWN;
+uint32_t last_cmd_time = 0;
 void processCommand(MAVMessage &msg)
 {
   bool result = false;
   uint8_t cmd = msg.button_change.state;
   switch (cmd)
   {
-  case LHM_CMD_ID_JETTISON:
-    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    result = lhmController.jettison();
-    break;
-  case LHM_CMD_ID_LOCK_LHM:
-    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    result = lhmController.lockLHM();
-    break;
-  case LHM_CMD_ID_RESET_DYNAMIXEL_COM:
-    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    result = lhmController.initiate();
-    break;
   case LHM_CMD_ID_HINGE_POWER_OFF:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
     result = lhmController.stopHingeMotor();
+    break;
+  case LHM_CMD_ID_HOOK_POWER_OFF:
+    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
+    result = lhmController.stopHookMotor();
     break;
   case LHM_CMD_ID_HINGE_TAKE_OFF:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
@@ -170,15 +164,15 @@ void processCommand(MAVMessage &msg)
     break;
   case LHM_CMD_ID_HINGE_LANDING:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
+    if (last_cmd == cmd && millis()-last_cmd_time < 5000 && hingeInTransition)
+    {
+      break;
+    }
     result = hingeInTransition = lhmController.setLandingPosition();
     break;
   case LHM_CMD_ID_HINGE_SWING_REDUCTION:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
     result = lhmController.setSwingReductionMode();
-    break;
-  case LHM_CMD_ID_HOOK_POWER_OFF:
-    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    result = lhmController.stopHookMotor();
     break;
   case LHM_CMD_ID_HOOK_CLOSE:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
@@ -190,10 +184,24 @@ void processCommand(MAVMessage &msg)
     result = lhmController.openHook();
     hookMotionStartTime = millis();
     break;
+  case LHM_CMD_ID_RESET_DYNAMIXEL_COM:
+    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
+    result = lhmController.initiate();
+    break;
+  case LHM_CMD_ID_JETTISON:
+    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
+    result = lhmController.jettison();
+    break;
+  case LHM_CMD_ID_LOCK_LHM:
+    lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
+    result = lhmController.lockLHM();
+    break;
   default:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_FAILED, LHM_CMD_PROG_COMMAND_ACK);
     return;
   }
+  last_cmd = cmd;
+  last_cmd_time = millis();
   lhmMsg.sendCommandFeedback(cmd, result, LHM_CMD_PROG_MISSION_STARTED);
 }
 
@@ -241,13 +249,6 @@ void trackHookTransition()
   }
 }
 
-inline void pulseLEDSequantial()
-{
-  lhmController.hingeMotorPitch.flashLED(10, 200);
-  lhmController.hingeMotorRoll.flashLED(10, 200);
-  lhmController.hookMotor.flashLED(10, 200);
-}
-
 inline void waitDebugSerial()
 {
   while (!DEBUG_SERIAL)
@@ -286,21 +287,5 @@ void checkJettisonButton()
   {
     DEBUG_SERIAL.println("On-board button pressed, requesting releasing LHM.");
     lhmController.jettison();
-  }
-}
-
-void askProtocolVersion()
-{
-  lhmMsg.mavlink.askProtocolVersion(1U, 1U);
-  delay(1000);
-  lhmMsg.mavlink.sendTakeOffCommand(1U, 1U);
-  while (1)
-  {
-    delay(1);
-    MAVMessage msg = lhmMsg.readMAVMessage();
-    if (msg.accepted && msg.msgId == MAVLINK_MSG_ID_PROTOCOL_VERSION)
-    {
-      break;
-    }
   }
 }

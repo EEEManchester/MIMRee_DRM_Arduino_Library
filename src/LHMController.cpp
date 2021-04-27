@@ -56,7 +56,7 @@ bool LHMController::initiate()
     result = result & hookMotor.setOperatingMode(OP_VELOCITY);
     result = result & stopHookMotor();
     result = result & stopHingeMotor();
-    DEBUG_SERIAL.println(result ? "LHMController::initiateDXL: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
+    DEBUG_SERIAL.println(result ? "LHMController::initiate: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
     return result;
 }
 

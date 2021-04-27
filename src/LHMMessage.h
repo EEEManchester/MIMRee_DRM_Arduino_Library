@@ -4,8 +4,6 @@
 #define __builtin_va_start(v, l)
 #define __builtin_va_end(v)
 
-#define LHM_DEBUG_ON 1
-
 #include <Arduino.h>
 #include <USBSerial.h>
 
@@ -72,7 +70,7 @@ public:
 
     MAVMessage readMAVMessage();
     MAVButtonChangeMessage readButtonChangeMessage(mavlink_message_t *msg);
-    void sendCommandFeedback(uint16_t cmd, bool result, uint8_t progress);
+    void sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress);
     void sendStatusMessage(lhm_hinge_status_t hingeStatus, lhm_hook_status_t hookStatus, uint8_t payload);
 
     MAVLink mavlink;
