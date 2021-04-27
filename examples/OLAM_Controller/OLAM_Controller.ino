@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 const int STATUS_REPORT_INTERVAL = 1000;
-const int SEND_HEARTBEAT_INTERVAL = 50000000;
+const int SEND_HEARTBEAT_INTERVAL = 1000;
 const int COMMAND_IN_CHECK_INTERVAL = 1;
 
 const int MAV_COM_INITIATE_INTERVAL = 1000;
@@ -22,8 +22,7 @@ mavlink_system_t mavlink_system = {
 void setup()
 {
   DEBUG_SERIAL.begin(1000000);
-  // waitDebugSerial();
-
+  waitDebugSerial();
   olamController.setup();
   while (true)
   {
@@ -100,7 +99,7 @@ void reportStatus()
   prevStatusReportTime = millis();
   lineStatus = olamController.ltController.getLineStatus();
   olamMsg.sendStatusMessage(lineStatus);
-  DEBUG_SERIAL.printf("【Status】Hinge=%d\n", lineStatus);
+  DEBUG_SERIAL.printf("【Status】LineStatus=%d\n", lineStatus);
 }
 
 void checkCommandIn()
@@ -135,6 +134,7 @@ void processCommand(MAVMessage &msg)
 {
   bool result = false;
   uint8_t cmd = msg.button_change.state;
+  uint32_t sTime = millis();
   switch (cmd)
   {
   case OLAM_TC_CMD_ID_POWER_OFF:
@@ -161,6 +161,11 @@ void processCommand(MAVMessage &msg)
     olamMsg.sendCommandFeedback(cmd, OLAM_CMD_RE_FAILED, OLAM_CMD_PROG_COMMAND_ACK);
     return;
   }
+  while (millis() - sTime < 1000)
+  {
+    delay (20);
+  }
+  DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
   olamMsg.sendCommandFeedback(cmd, result, OLAM_CMD_PROG_MISSION_STARTED);
 }
 

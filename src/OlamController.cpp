@@ -24,6 +24,6 @@ void OLAMController::setup()
 bool OLAMController::initiate()
 {
     bool result = ltcMotor.reboot();
-    result = result & ltcMotor.setVelocityLimit(TC_VELOCITY_MAX);
+    result = result && ltcMotor.setVelocityLimit(TC_VELOCITY_MAX);
     DEBUG_SERIAL.println(result ? "OLAMController::initiate: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
 }
