@@ -24,7 +24,7 @@ MAVMessage LHMMessage::readMAVMessage()
         }
         if (msgIdHistPt>0)
         {
-            DEBUG_SERIAL.printf("Ignored messages: %s\n", msgIdHistToString().c_str());
+            MAV_DEBUG_PRINTF("Ignored messages: %s\n", msgIdHistToString().c_str());
             clearMsgIdHist();
         }
         return MAVMessage(MAVLINK_MSG_ID_HEARTBEAT, true);

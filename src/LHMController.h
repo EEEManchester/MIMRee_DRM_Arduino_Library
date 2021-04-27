@@ -2,7 +2,6 @@
 #define MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 
 // #define MAV_DEBUG
-#define MAV_ENABLE_CMD
 
 #include <Arduino.h>
 #include <USBSerial.h>
