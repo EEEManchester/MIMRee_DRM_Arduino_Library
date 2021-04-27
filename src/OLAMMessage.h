@@ -53,7 +53,7 @@ public:
     MAVMessage readMAVMessage();
     MAVButtonChangeMessage readButtonChangeMessage(mavlink_message_t *msg);
     void sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress);
-    void sendStatusMessage(uint8_t lineStatus);
+    void sendStatusMessage(uint8_t lineStatus, uint8_t commandSeq, uint8_t commandExecutionStatus);
 
     MAVLink mavlink;
 

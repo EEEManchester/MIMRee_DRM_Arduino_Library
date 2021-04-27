@@ -55,7 +55,9 @@ void setup()
 long prevStatusReportTime = 0;
 long prevCommandInCheckTime = 0;
 long prevSendHeartbeatTime = 0;
-uint8_t lineStatus;
+uint8_t tcStatus;
+uint8_t commandSeq = 0;
+uint8_t commandExeResult = 0;
 
 void loop()
 {
@@ -97,9 +99,9 @@ void reportStatus()
     return;
   }
   prevStatusReportTime = millis();
-  lineStatus = olamController.ltController.getLineStatus();
-  olamMsg.sendStatusMessage(lineStatus);
-  DEBUG_SERIAL.printf("【Status】LineStatus=%d\n", lineStatus);
+  tcStatus = olamController.ltController.status();
+  olamMsg.sendStatusMessage(tcStatus, commandSeq, commandExeResult);
+  DEBUG_SERIAL.printf("【Status】LineStatus=%d, commandSeq=%d, CMDExecusion=%d\n", tcStatus, commandSeq, commandExeResult);
 }
 
 void checkCommandIn()
@@ -135,6 +137,8 @@ void processCommand(MAVMessage &msg)
   bool result = false;
   uint8_t cmd = msg.button_change.state;
   uint32_t sTime = millis();
+  commandExeResult = 0;
+  commandSeq += 1;
   switch (cmd)
   {
   case OLAM_TC_CMD_ID_POWER_OFF:
@@ -161,12 +165,9 @@ void processCommand(MAVMessage &msg)
     olamMsg.sendCommandFeedback(cmd, OLAM_CMD_RE_FAILED, OLAM_CMD_PROG_COMMAND_ACK);
     return;
   }
-  while (millis() - sTime < 1000)
-  {
-    delay (20);
-  }
   DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
   olamMsg.sendCommandFeedback(cmd, result, OLAM_CMD_PROG_MISSION_STARTED);
+  commandExeResult = result ? 2: 1;
 }
 
 inline void waitDebugSerial()

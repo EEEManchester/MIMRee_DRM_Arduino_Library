@@ -42,7 +42,7 @@ MAVMessage OLAMMessage::readMAVMessage()
 MAVButtonChangeMessage OLAMMessage::readButtonChangeMessage(mavlink_message_t* msg)
 {
     mavlink_button_change_t bc;
-    if (msg->sysid != GCS_MAV_SYS_ID || msg->compid != GCS_MAV_SYS_ID)
+    if (msg->sysid != GCS_MAV_SYS_ID || msg->compid != GCS_MAV_COMP_ID)
     {
         DEBUG_SERIAL.printf("OLAMMessage::readMAVMessage: [I][NFU] button_change [seq:%d] from [%d-%d]\n", msg->seq, msg->sysid, msg->compid);
         return MAVButtonChangeMessage(bc, false);
@@ -64,10 +64,10 @@ void OLAMMessage::sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress
     mavlink.sendCommandAck(cmd, result, progress, 0, OLAM_MAV_SYS_ID, GCS_MAV_COMP_ID);
 }
 
-void OLAMMessage::sendStatusMessage(uint8_t lineStatus)
+void OLAMMessage::sendStatusMessage(uint8_t lineStatus, uint8_t commandSeq, uint8_t commandExecutionStatus)
 {
     char name[10];
     strcpy(name, OLAM_MAV_MSG_DEBUG_VECT_NAME_STATUS_REPORT);
     uint32_t timestamp = 0;
-    mavlink.sendDebugVect(*name, timestamp, lineStatus, 0, 0);//TODO implement this?
+    mavlink.sendDebugVect(*name, timestamp, lineStatus, commandSeq, commandExecutionStatus);//TODO implement this?
 }
