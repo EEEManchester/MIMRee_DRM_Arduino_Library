@@ -9,19 +9,19 @@
 
 enum olam_line_status_t: uint8_t
 {
-    OLAM_LINE_STATUS_ERROR = 0,
-    OLAM_LINE_STATUS_UNKNOWN,
+    OLAM_LINE_STATUS_UNKNOWN = 0,
+    OLAM_LINE_STATUS_ERROR,
     OLAM_LINE_LOOSE,
     OLAM_LINE_IN_TENSION,
     OLAM_LINE_IN_TENSION_REVERSED
 };
 
-enum olam_tension_control_mode_t: uint8_t
+enum olam_tension_control_status_t: uint8_t
 {
-    OLAM_TC_ERROR = 0,
-    OLAM_TC_POWERED_OFF,
-    OLAM_TC_POSITION_HOLDING,
-    OLAM_TC_ENGAGEMENT_READY
+    OLAM_TC_STATUS_UNKNOWN = 0,
+    OLAM_TC_STATUS_ERROR = 1,
+    OLAM_TC_STATUS_POWERED_OFF,
+    OLAM_TC_STATUS_POSITION_HOLDING
 };
 
 class LineTensionController
@@ -32,13 +32,14 @@ public:
     inline uint8_t getCurrentMode() { return _mode; }
     // inline bool isInHomeSequence() { return _isInHomeSequence; }
     inline uint8_t getMotorId() { return ltcMotor.getId(); }
-    uint8_t getLineStatus(bool retryOnError = true);
+    olam_line_status_t getLineStatus(bool retryOnError = true);
     
     bool goToHomeAndHold();
     bool prepareEngagement();
     bool detension();
     bool holdPosition();
     bool powerOff();
+    olam_tension_control_status_t status();
 
 private:
     DXLMotor &ltcMotor;

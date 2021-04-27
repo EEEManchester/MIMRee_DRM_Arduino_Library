@@ -42,7 +42,7 @@ MAVMessage LHMMessage::readMAVMessage()
 MAVButtonChangeMessage LHMMessage::readButtonChangeMessage(mavlink_message_t* msg)
 {
     mavlink_button_change_t bc;
-    if (msg->sysid != GCS_MAV_SYS_ID || msg->compid != GCS_MAV_SYS_ID)
+    if (msg->sysid != GCS_MAV_SYS_ID || msg->compid != GCS_MAV_COMP_ID)
     {
         DEBUG_SERIAL.printf("LHMMessage::readMAVMessage: [I][NFU] button_change [seq:%d] from [%d-%d]\n", msg->seq, msg->sysid, msg->compid);
         return MAVButtonChangeMessage(bc, false);

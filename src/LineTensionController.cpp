@@ -5,6 +5,25 @@ LineTensionController::LineTensionController(DXLMotor &ltcMotor)
 {
 }
 
+olam_tension_control_status_t LineTensionController::status()
+{
+    uint8_t lineStatus = getLineStatus();
+    if (lineStatus == OLAM_LINE_STATUS_ERROR || lineStatus == OLAM_LINE_STATUS_UNKNOWN || !ltcMotor.isOnline())
+    {
+        return OLAM_TC_STATUS_ERROR;
+    }
+    bool motorTorqueOn = ltcMotor.isTorqueOn();
+    if (motorTorqueOn && !ltcMotor.isMoving())
+    {
+        return OLAM_TC_STATUS_POSITION_HOLDING;
+    }
+    if (!motorTorqueOn)
+    {
+        return OLAM_TC_STATUS_POWERED_OFF;
+    }
+    return OLAM_TC_STATUS_UNKNOWN;
+}
+
 bool LineTensionController::holdPosition()
 {
     bool result = ltcMotor.setOperatingMode(OP_EXTENDED_POSITION);
@@ -12,7 +31,7 @@ bool LineTensionController::holdPosition()
     {
         return false;
     }
-    _mode = OLAM_TC_POSITION_HOLDING;
+    _mode = OLAM_TC_STATUS_POSITION_HOLDING;
     return ltcMotor.setTorqueOn();
 }
 
@@ -21,7 +40,7 @@ bool LineTensionController::powerOff()
     bool result = ltcMotor.setTorqueOff();
     if (result)
     {
-        _mode = OLAM_TC_POWERED_OFF;
+        _mode = OLAM_TC_STATUS_POWERED_OFF;
     }
     return result;
 }
@@ -34,7 +53,7 @@ bool LineTensionController::detension()
         return false;
     }
     ltcMotor.dxl.torqueOff(ltcMotor.getId());
-    _mode = OLAM_TC_POWERED_OFF;
+    _mode = OLAM_TC_STATUS_POWERED_OFF;
     return true;
 }
 
@@ -66,7 +85,7 @@ bool LineTensionController::goToHomeAndHold()
         softEmergencyStop("LineTensionController::holdHome: Home acquired but not able to hold position. Error occurred.");
         return false;
     }
-    _mode = OLAM_TC_POSITION_HOLDING;
+    _mode = OLAM_TC_STATUS_POSITION_HOLDING;
     return true;
 }
 
@@ -142,7 +161,7 @@ bool LineTensionController::_prepareEngagement()
     return true;
 }
 
-uint8_t LineTensionController::getLineStatus(bool retryOnError)
+olam_line_status_t LineTensionController::getLineStatus(bool retryOnError)
 {
     int lsHighNO = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NO) == LOW;
     int lsHighNC = digitalRead(TC_PIN_LIMIT_SWITCH_HIGH_NC) == LOW;
@@ -162,7 +181,7 @@ uint8_t LineTensionController::getLineStatus(bool retryOnError)
     }
     if (retryOnError)
     {
-        delay(50);
+        delay(20);
         return getLineStatus(false);
     }
     return OLAM_LINE_STATUS_ERROR;
@@ -247,11 +266,11 @@ bool LineTensionController::softEmergencyStop(char *message)
     DEBUG_SERIAL.println(message);
     if (!result)
     {
-        _mode = OLAM_TC_ERROR;
+        _mode = OLAM_TC_STATUS_ERROR;
         DEBUG_SERIAL.println("LineTensionController::softEmergencyStop: Fail to reboot TC motor.");
         return false;
     }
-    _mode = OLAM_TC_POWERED_OFF;
+    _mode = OLAM_TC_STATUS_POWERED_OFF;
     DEBUG_SERIAL.println("LineTensionController::softEmergencyStop: TC motor has been rebooted.");
     return true;
 }
