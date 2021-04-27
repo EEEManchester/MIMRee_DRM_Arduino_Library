@@ -13,18 +13,18 @@
 
 ## 1.1. Roadmap
 
-| Item                        | State       | To do                   |
-| --------------------------- | ----------- | ----------------------- |
-| Servo control               | Completed   |                         |
-| Hook control                | Completed   |                         |
-| Hinge functions             | Completed   |                         |
-| Serial port communication   | Completed   |                         |
-| Mavlink communiation        | In progress | - test with RHUL system |
-| Status visual aid           | In progress | - add more LED stats    |
-| Onboard button functions    | Completed   |                         |
-| Lab test                    | Not started |                         |
-| Field test                  | Not started |                         |
-| LHM mission finish feedback | Not started |                         |
+| Item                        | State       | To do                |
+| --------------------------- | ----------- | -------------------- |
+| Servo control               | Completed   |                      |
+| Hook control                | Completed   |                      |
+| Hinge functions             | Completed   |                      |
+| Serial port communication   | Completed   |                      |
+| Mavlink communiation        | Completed   |                      |
+| Status visual aid           | In progress | - add more LED stats |
+| Onboard button functions    | Completed   |                      |
+| Lab test                    | Completed   |                      |
+| LHM mission finish feedback | Not started |                      |
+| Field test                  | Not started |                      |
 
 ## 1.2. Mavlink message
 
@@ -32,23 +32,13 @@
 
 Mavlink protocol is used to handle communication between the LHM and the GCS. The *Component ID* of LHM is *MAV_COMP_ID_USER31 = 55*.
 
-To request LHM to perform certain task, GCS needs to send a COMMAND_INT ([#75](https://mavlink.io/en/messages/common.html#COMMAND_INT)) message.
+To request LHM to perform certain task, GCS needs to send a BUTTON_CHANGE ([#2575](https://mavlink.io/en/messages/common.html#BUTTON_CHANGE)) message.
 
-| Field Name       | Type     | Values                    | Description                                              |
-| ---------------- | -------- | ------------------------- | -------------------------------------------------------- |
-| target_system    | uint8_t  | 1                         | System ID of LHM                                         |
-| target_component | uint8_t  | 55                        | Component ID of LHM                                      |
-| frame            | uint8_t  | 0                         | The coordinate system of the COMMAND. (Not used for LHM) |
-| command          | uint16_t | MAV_CMD_DO_SET_MODE (176) | Use MAV_CMD_DO_SET_MODE only.                            |
-| current          | uint8_t  | 0                         | Not used.                                                |
-| autocontinue     | uint8_t  | 0                         | Not used (set 0).                                        |
-| param1           | float    | [LHM Command](#table.1)   | The command to be sent.                                  |
-| param2           | float    | 0                         | Not used by LHM.                                         |
-| param3           | float    | 0                         | Not used by LHM.                                         |
-| param4           | float    | 0                         | Not used by LHM.                                         |
-| x                | int32_t  | 0                         | Not used by LHM.                                         |
-| y                | int32_t  | 0                         | Not used by LHM.                                         |
-| z                | float    | 0                         | Not used by LHM.                                         |
+| Field Name     | Type     | Values                  | Description                                                          |
+| -------------- | -------- | ----------------------- | -------------------------------------------------------------------- |
+| time_boost_ms  | uint32_t | 1                       | Timestamp (time since system boot).                                  |
+| last_change_ms | uint32_t | 64218                   | Used as a passcode that confirms the message is sent to LHM from GCS |
+| state          | uint8_t  | [LHM Command](#table.1) | The command to be sent.                                              |
 
 ### 1.2.2. LHM command feedback
 
@@ -58,14 +48,14 @@ LHM sends command feedback on two occassions:
 
 Command feedback is reported using COMMAND_ACK ([#77](https://mavlink.io/en/messages/common.html#COMMAND_ACK)).
 
-| Field Name       | Type     | Values                  | Description                                                                                                                                |
-| ---------------- | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| command          | uint16_t | [LHM Command](#table.1) | The command to be acknowledged.                                                                                                            |
-| result           | uint8_t  | 0, 1                    | Result of command, 0 is failed and 1 is successful.                                                                                        |
-| progress         | uint8_t  | 0, 1, 2, 3              | WIP: 0: Error (not implemented), 1: command_int received and interpreted, 2: mission started, 3: mission finished (not implemented)        |
-| result_param2    | int32_t  |                         | Not used.                                                                                                                                  |
-| target_system    | uint8_t  |                         | System ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.    |
-| target_component | uint8_t  |                         | Component ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement. |
+| Field Name       | Type     | Values                  | Description                                                                                                                                      |
+| ---------------- | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| command          | uint16_t | [LHM Command](#table.1) | The command to be acknowledged.                                                                                                                  |
+| result           | uint8_t  | 0, 1                    | Result of command, 0 is failed and 1 is successful.                                                                                              |
+| progress         | uint8_t  | 0, 1, 2, 3              | ~~0: Error (not implemented), 1: command_int received and interpreted,~~ 2: mission started, ~~3: mission finished (not implemented)~~ |
+| result_param2    | int32_t  |                         | Not used.                                                                                                                                        |
+| target_system    | uint8_t  |                         | System ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.          |
+| target_component | uint8_t  |                         | Component ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.       |
 
 ### 1.2.3. LHM status report
 
