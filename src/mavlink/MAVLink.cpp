@@ -47,7 +47,7 @@ void MAVLink::sendMessage(mavlink_message_t *msg)
     uint16_t bufferLen = mavlink_msg_to_send_buffer(buffer, msg);
     mavSerial->write(buffer, bufferLen);
 
-    Serial.printf("MAVLink::sendMessage: [O] Message[%d] sent from local system [sid:%d, cid:%d].\n", msg->msgid, msg->sysid, msg->compid);
+    MAV_DEBUG_PRINTF("MAVLink::sendMessage: [O] Message[%d] sent from local system [sid:%d, cid:%d].\n", msg->msgid, msg->sysid, msg->compid);
 }
 
 bool MAVLink::waitMessage(mavlink_message_t *msg, uint32_t msgId, uint32_t timeoutMS)

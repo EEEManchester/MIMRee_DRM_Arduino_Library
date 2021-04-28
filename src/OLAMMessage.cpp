@@ -17,14 +17,14 @@ MAVMessage OLAMMessage::readMAVMessage()
         blinkCOMLED();
         if (msg.sysid == GCS_MAV_SYS_ID && msg.compid == GCS_MAV_COMP_ID)
         {
-            DEBUG_SERIAL.println("OLAMMessage::readMAVMessage: [I] Heartbeat from GCS.");
+            MAV_DEBUG_PRINTF("OLAMMessage::readMAVMessage: [I] Heartbeat from GCS.");
             // mavlink_heartbeat_t heartbeat;
             // mavlink_msg_heartbeat_decode(&msg, &heartbeat);
             // DEBUG_SERIAL.printf("OLAMMessage::readMAVMessage: [I] Heartbeat [%d-%d] | cm=%d, t=%d, ap=%d, bm=%d, ss=%d, mver=%d.\n", msg.sysid, msg.compid, heartbeat.custom_mode, heartbeat.type, heartbeat.autopilot, heartbeat.base_mode, heartbeat.system_status, heartbeat.mavlink_version);
         }
         if (msgIdHistPt>0)
         {
-            DEBUG_SERIAL.printf("Ignored messages: %s\n", msgIdHistToString().c_str());
+            MAV_DEBUG_PRINTF("Ignored messages: %s\n", msgIdHistToString().c_str());
             clearMsgIdHist();
         }
         return MAVMessage(MAVLINK_MSG_ID_HEARTBEAT, true);

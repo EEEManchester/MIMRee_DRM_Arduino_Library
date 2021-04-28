@@ -101,7 +101,7 @@ void reportStatus()
   prevStatusReportTime = millis();
   tcStatus = olamController.ltController.status();
   olamMsg.sendStatusMessage(tcStatus, commandSeq, commandExeResult);
-  DEBUG_SERIAL.printf("【Status】LineStatus=%d, commandSeq=%d, CMDExecusion=%d\n", tcStatus, commandSeq, commandExeResult);
+  DEBUG_SERIAL.printf("【Status】TCStatus=%d, commandSeq=%d, CMDExecusion=%d\n", tcStatus, commandSeq, commandExeResult);
 }
 
 void checkCommandIn()
@@ -165,8 +165,8 @@ void processCommand(MAVMessage &msg)
     olamMsg.sendCommandFeedback(cmd, OLAM_CMD_RE_FAILED, OLAM_CMD_PROG_COMMAND_ACK);
     return;
   }
-  DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
-  olamMsg.sendCommandFeedback(cmd, result, OLAM_CMD_PROG_MISSION_STARTED);
+  // DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
+  // olamMsg.sendCommandFeedback(cmd, result, OLAM_CMD_PROG_MISSION_FINISHED);
   commandExeResult = result ? 2: 1;
 }
 

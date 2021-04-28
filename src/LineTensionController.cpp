@@ -78,15 +78,7 @@ bool LineTensionController::goToHomeAndHold()
         softEmergencyStop("LineTensionController::holdHome: Fail to return to holdHome. Error occurred.");
         return false;
     }
-    bool result = ltcMotor.setOperatingMode(OP_EXTENDED_POSITION);
-    result = result && ltcMotor.isTorqueOn();
-    if (!result)
-    {
-        softEmergencyStop("LineTensionController::holdHome: Home acquired but not able to hold position. Error occurred.");
-        return false;
-    }
-    _mode = OLAM_TC_STATUS_POSITION_HOLDING;
-    return true;
+    return holdPosition();
 }
 
 bool LineTensionController::_home()
