@@ -197,6 +197,7 @@ MotionSequenceStatusType LHMController::getMotionSequenceStatus()
 MotionSequenceExecusionResultType LHMController::nextMotionSequence()
 {    
     uint8_t s = getMotionSequenceStatus();
+    DXL_DEBUG_PRINTF("LHMController::nextMotionSequence: currentMotionSequence.status() returns %d\n", s);
     if (s == MS_SEQ_STATUS_COMPLETED)
     {
         return MS_EXE_RE_SEQUENCE_ENDED;
@@ -205,10 +206,11 @@ MotionSequenceExecusionResultType LHMController::nextMotionSequence()
     {
         return MS_EXE_RE_FAILED;
     }
-    else if (s != MS_SEQ_STATUS_WAITING)
+    else if (s != MS_SEQ_STATUS_WAITING && s != MS_SEQ_STATUS_STAGE_COMPLETED)
     {
         return MS_EXE_RE_ERROR;
     }
+    DXL_DEBUG_PRINTF("LHMController::nextMotionSequence: go to next(), currentMotionSequence.currentStageId()=%d\n", currentMotionSequence.currentStageId());
     return currentMotionSequence.next();
 }
 

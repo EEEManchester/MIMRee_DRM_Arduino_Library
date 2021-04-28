@@ -18,6 +18,7 @@ MotionSequenceStatusType MotionSequence::status()
         return MS_SEQ_STATUS_UNKNOWN;
     }
     uint8_t result = currentStage.status();
+    DXL_DEBUG_PRINTF("MotionSequence::status: currentStage.status() returns %d\n", result);
     if (!currentStage.started())
     {
         return MS_SEQ_STATUS_WAITING;

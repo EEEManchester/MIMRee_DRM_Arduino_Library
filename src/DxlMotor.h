@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <Dynamixel2Arduino.h>
 
+// #define DXL_DEBUG
+
 #ifdef DXL_DEBUG
 #ifndef DEBUG_SERIAL
 #define DEBUG_SERIAL Serial

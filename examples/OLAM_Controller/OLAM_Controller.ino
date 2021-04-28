@@ -11,6 +11,8 @@ const int COMMAND_IN_CHECK_INTERVAL = 1;
 const int MAV_COM_INITIATE_INTERVAL = 1000;
 int lastMAVComInitiateTime = 0;
 
+#define LHM_VERSION "V1.0-20210428-1942"
+
 OLAMController olamController = OLAMController();
 OLAMMessage olamMsg = OLAMMessage(olamController);
 
@@ -22,7 +24,8 @@ mavlink_system_t mavlink_system = {
 void setup()
 {
   DEBUG_SERIAL.begin(1000000);
-  waitDebugSerial();
+  DEBUG_SERIAL.printf("Version: %s\n", LHM_VERSION);
+  // waitDebugSerial();
   olamController.setup();
   while (true)
   {
