@@ -71,7 +71,11 @@ public:
     MAVMessage readMAVMessage();
     MAVButtonChangeMessage readButtonChangeMessage(mavlink_message_t *msg);
     void sendCommandFeedback(uint8_t cmd, bool result, uint8_t progress);
+#ifdef COMM_LINK_TEST
+    void sendStatusMessage(lhm_hinge_status_t hingeStatus, uint32_t hookStatus, uint8_t payload);
+#else
     void sendStatusMessage(lhm_hinge_status_t hingeStatus, lhm_hook_status_t hookStatus, uint8_t payload);
+#endif
 
     MAVLink mavlink;
 

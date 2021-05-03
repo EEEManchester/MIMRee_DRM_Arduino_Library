@@ -2,6 +2,7 @@
 #define MIMREE_DRM_CONTROLLER_LHM_CONTROLLER_H
 
 // #define MAV_DEBUG
+// #define COMM_LINK_TEST
 
 #include <Arduino.h>
 #include <USBSerial.h>
