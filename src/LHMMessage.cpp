@@ -46,13 +46,13 @@ MAVButtonChangeMessage LHMMessage::readButtonChangeMessage(mavlink_message_t *ms
     mavlink_button_change_t bc;
     if (msg->sysid != GCS_MAV_SYS_ID || msg->compid != GCS_MAV_COMP_ID)
     {
-        MAV_DEBUG_PRINTF.printf("LHMMessage::readMAVMessage: [I][NFU] button_change [seq:%d] from [%d-%d]\n", msg->seq, msg->sysid, msg->compid);
+        MAV_DEBUG_PRINTF("LHMMessage::readMAVMessage: [I][NFU] button_change [seq:%d] from [%d-%d]\n", msg->seq, msg->sysid, msg->compid);
         return MAVButtonChangeMessage(bc, false);
     }
     mavlink_msg_button_change_decode(msg, &bc);
     if (bc.last_change_ms == LHM_MAV_MSG_BUTTON_CHANGE_PASSCODE)
     {
-        MAV_DEBUG_PRINTF.printf("LHMMessage::readMAVMessage: [I] button_change [seq:%d] from [%d-%d] (s=[%d])\n", msg->seq, msg->sysid, msg->compid, bc.state);
+        MAV_DEBUG_PRINTF("LHMMessage::readMAVMessage: [I] button_change [seq:%d] from [%d-%d] (s=[%d])\n", msg->seq, msg->sysid, msg->compid, bc.state);
     }
     return MAVButtonChangeMessage(bc, true);
 }
