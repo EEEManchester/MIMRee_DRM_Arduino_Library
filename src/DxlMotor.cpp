@@ -30,30 +30,11 @@ bool DXLMotor::isTorqueOn()
     return result;
 }
 
-float DXLMotor::getCurrentPosition()
-{
-    float result = dxl.getPresentPosition(id);
-    DXL_DEBUG_PRINTF("DXLMotor::getCurrentPosition:: id[%d] = %f\n", id, result);
-    return result;
-}
-
-float DXLMotor::getCurrentVelocity()
-{
-    float result = dxl.getPresentVelocity(id);
-    DXL_DEBUG_PRINTF("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", id, result);
-    return result;
-}
-
 bool DXLMotor::isMoving()
 {
     int32_t result = repeatCOM<uint8_t, uint8_t, uint32_t>(&Dynamixel2Arduino::readControlTableItem, MOVING, id, 100U);
     DXL_DEBUG_PRINTF("DXLMotor::isMoving:: id[%d] = %d\n", id, result);
     return result == 1;
-}
-
-bool DXLMotor::isAtGoalPosition(float positionTolerance)
-{
-    return isAtPosition(lastSetGoalPosition, positionTolerance);
 }
 
 bool DXLMotor::isAtPosition(float position, float positionTolerance)
@@ -222,18 +203,6 @@ bool DXLMotor::setGoalPosition(float position)
     return result;
 }
 
-void DXLMotor::setLED(bool setOn)
-{
-    if (setOn)
-    {
-        dxl.ledOn(id);
-    }
-    else
-    {
-        dxl.ledOff(id);
-    }
-}
-
 void DXLMotor::flashLED(uint8_t times, unsigned long interval)
 {
     for (uint8_t i = 0; i < times; i++)
@@ -250,15 +219,6 @@ bool DXLMotor::setVelocityLimit(int32_t val)
     bool result = repeatCOM<uint8_t, uint8_t, int32_t, uint32_t>(&Dynamixel2Arduino::writeControlTableItem, VELOCITY_LIMIT, id, val, 100);
     DXL_DEBUG_PRINTF("DXLMotor::setVelocityLimit:: id[%d] = %d\n", id, result);
     return result;
-}
-
-void DXLMotor::resetOPRelatedParamRecords()
-{
-    lastSetVelocityProfile = -999;
-    lastSetAccelerationProfile = -999;
-    lastSetGoalCurrent = -999;
-    lastSetGoalPosition = -999;
-    lastSetGoalVelocity = -999;
 }
 
 bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)())
