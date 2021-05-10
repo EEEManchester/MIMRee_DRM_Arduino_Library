@@ -51,6 +51,7 @@ public:
     void sendHeartbeat();
     mavlink_heartbeat_t readHeartbeat(mavlink_message_t *msg);
     void askProtocolVersion(uint8_t targetSysID, uint8_t targetCompID);
+    void sendGPSRaw();
 
 private:
     HardwareSerial *mavSerial;

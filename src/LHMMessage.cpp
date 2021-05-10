@@ -20,7 +20,7 @@ MAVMessage LHMMessage::readMAVMessage()
         {
             mavlink_heartbeat_t heartbeat;
             mavlink_msg_heartbeat_decode(&msg, &heartbeat);
-            MAV_DEBUG_PRINTF.printf("LHMMessage::readMAVMessage: [I] Heartbeat from GCS [%d-%d] | cm=%d, t=%d, ap=%d, bm=%d, ss=%d, mver=%d.\n", msg.sysid, msg.compid, heartbeat.custom_mode, heartbeat.type, heartbeat.autopilot, heartbeat.base_mode, heartbeat.system_status, heartbeat.mavlink_version);
+            MAV_DEBUG_PRINTF("LHMMessage::readMAVMessage: [I] Heartbeat from GCS [%d-%d] | cm=%d, t=%d, ap=%d, bm=%d, ss=%d, mver=%d.\n", msg.sysid, msg.compid, heartbeat.custom_mode, heartbeat.type, heartbeat.autopilot, heartbeat.base_mode, heartbeat.system_status, heartbeat.mavlink_version);
         }
         if (msgIdHistPt > 0)
         {

@@ -155,6 +155,7 @@ void MAVLink::sendCommandAck(uint16_t cmdId, uint8_t result, uint8_t progress, u
 {
     mavlink_message_t msg;
     mavlink_msg_command_ack_pack(mySysID, myCompID, &msg, cmdId, result, progress, cmdParam, targetSysid, targetCompid);
+    MAV_DEBUG_PRINTF("MAVLink::sendCommandAck: Sending CMDACK to [%d]:[%d] cmd=%d param=%d re=%d prog=%d\n", targetSysid, targetCompid, cmdId, cmdParam, result, progress);
     sendMessage(&msg);
 }
 

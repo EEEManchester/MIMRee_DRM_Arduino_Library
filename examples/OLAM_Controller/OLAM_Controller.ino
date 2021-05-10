@@ -11,7 +11,7 @@ const int COMMAND_IN_CHECK_INTERVAL = 1;
 const int MAV_COM_INITIATE_INTERVAL = 1000;
 int lastMAVComInitiateTime = 0;
 
-#define LHM_VERSION "V1.0-20210428-1942"
+#define LHM_VERSION "V1.1-20210429-1736"
 
 OLAMController olamController = OLAMController();
 OLAMMessage olamMsg = OLAMMessage(olamController);
@@ -29,6 +29,7 @@ void setup()
   olamController.setup();
   while (true)
   {
+    checkOnBoardButton();
     if (millis() - lastMAVComInitiateTime > MAV_COM_INITIATE_INTERVAL)
     {
       bool result = olamMsg.initiate(1);
@@ -65,6 +66,7 @@ uint8_t commandExeResult = 0;
 void loop()
 {
   olamController.loopAllLED();
+  checkOnBoardButton();
   reportStatus();
   sendHeartBeat();
   checkCommandIn();
@@ -177,4 +179,31 @@ inline void waitDebugSerial()
 {
   while (!DEBUG_SERIAL)
     ;
+}
+
+void checkOnBoardButton()
+{
+  LSButtonState btnHomeState = olamController.homeButton.getState();
+  if (btnHomeState == LSButtonState::LONG_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board [HOME] button long pressed, requesting HOME procedures.");
+    olamController.ltController.goToHomeAndHold();
+  }
+  else if (btnHomeState == LSButtonState::SHORT_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board [HOME] button short pressed, requesting POWER OFF.");
+    olamController.ltController.powerOff();
+  }  
+  LSButtonState btnEngagePrepState = olamController.engagementButton.getState();
+  if (btnEngagePrepState == LSButtonState::LONG_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board [ENG] button long pressed, requesting ENGAGEMENT-PREP procedures.");
+    olamController.ltController.prepareEngagement();
+  }
+  else if (btnEngagePrepState == LSButtonState::SHORT_PRESSED)
+  {
+    DEBUG_SERIAL.println("On-board [ENG] button short pressed, requesting POWER OFF.");
+    olamController.ltController.powerOff();
+  }
+
 }
