@@ -4,12 +4,12 @@
 #include <utilities/LEDController.h>
 #include <Arduino.h>
 
-const int STATUS_REPORT_INTERVAL = 1000;
-const int SEND_HEARTBEAT_INTERVAL = 1000;
-const int COMMAND_IN_CHECK_INTERVAL = 1;
+const uint32_t STATUS_REPORT_INTERVAL = 1000;
+const uint32_t SEND_HEARTBEAT_INTERVAL = 1000;
+const uint32_t COMMAND_IN_CHECK_INTERVAL = 1;
 
-const int MAV_COM_INITIATE_INTERVAL = 1000;
-int lastMAVComInitiateTime = 0;
+const uint32_t MAV_COM_INITIATE_INTERVAL = 1000;
+uint32_t lastMAVComInitiateTime = 0;
 
 #define LHM_VERSION "V1.1-20210429-1736"
 
@@ -56,9 +56,9 @@ void setup()
   Serial.println("【Setup】Setup complete.");
 }
 
-long prevStatusReportTime = 0;
-long prevCommandInCheckTime = 0;
-long prevSendHeartbeatTime = 0;
+uint32_t prevStatusReportTime = 0;
+uint32_t prevCommandInCheckTime = 0;
+uint32_t prevSendHeartbeatTime = 0;
 uint8_t tcStatus;
 uint8_t commandSeq = 0;
 uint8_t commandExeResult = 0;
