@@ -24,9 +24,11 @@ public:
     DXLMotor hingeMotorPitch;
     DXLMotor hingeMotorRoll;
     LongShortPressButton btnJet;
+    LongShortPressButton btnSD;
 
-    void setup();
-    bool initiate();
+    bool setup();
+    bool resetAllServos();
+    bool resetHingeServoError();
 
     lhm_hook_status_t getHookStatus();
     inline lhm_hook_status_t getHookMotionStatus() { return hookMotionStatus; }

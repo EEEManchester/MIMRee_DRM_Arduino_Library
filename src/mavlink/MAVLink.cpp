@@ -9,12 +9,12 @@ bool MAVLink::initiate(unsigned long baudrate)
 {
     mavSerial->begin(baudrate);
     delay(100);
-    bool result = confirmHandshake(2000U);
-    if (!result)
-    {
-        Serial.println("MAVLink::initiate: Fail to initiate COM.");
-        return false;
-    }
+    // bool result = confirmHandshake(2000U);
+    // if (!result)
+    // {
+    //     Serial.println("MAVLink::initiate: Fail to initiate COM.");
+    //     return false;
+    // }
     Serial.println("MAVLink::initiate: COM initiated.");
     return true;
 }

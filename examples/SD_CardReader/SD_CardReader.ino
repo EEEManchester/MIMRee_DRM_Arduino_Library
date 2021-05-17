@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <SdFat.h>
 #include "cardreader.h"
 #define DEBUG_SERIAL Serial
 
@@ -8,6 +7,7 @@ drm_datastore_t datastore;
 
 void setup() {
     DEBUG_SERIAL.begin(9600);
+    while (!DEBUG_SERIAL) ;
     CR.start();
 }
 

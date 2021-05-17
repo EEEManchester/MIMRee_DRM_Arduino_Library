@@ -27,19 +27,11 @@ void setup()
   DEBUG_SERIAL.printf("Version: %s\n", LHM_VERSION);
   // waitDebugSerial();
   olamController.setup();
-  while (true)
+  while (!olamMsg.initiate())
   {
+    Serial.println("Connection failed. Trying again.");
     checkOnBoardButton();
-    if (millis() - lastMAVComInitiateTime > MAV_COM_INITIATE_INTERVAL)
-    {
-      bool result = olamMsg.initiate(1);
-      olamController.ledRed.syncBlink(2, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
-      lastMAVComInitiateTime = millis();
-      if (result)
-      {
-        break;
-      }
-    }
+    delay(1000);
   }
 
   if (olamController.initiate())

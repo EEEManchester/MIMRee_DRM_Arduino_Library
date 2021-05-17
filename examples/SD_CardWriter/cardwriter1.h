@@ -9,7 +9,7 @@ typedef struct DRMDataStore
     float velocity;
 } drm_datastore_t;
 
-#define PIN_CHIP_SELECT BOARD_SPI2_NSS_PIN
+#define PIN_CHIP_SELECT 2
 #define datastore_BUF_SIZE 32
 
 class CardWriter
@@ -39,8 +39,8 @@ public:
         }
         datastoreBuf[datastoreBufPointer] = datastore;
         datastoreBufPointer++;
-        Serial.print("New data -> ");
-        Serial.println(datastoreBufPointer);
+        // Serial.print("New data -> ");
+        // Serial.println(datastoreBufPointer);
     }
 
 private:

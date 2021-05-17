@@ -45,6 +45,7 @@ public:
         return dxl.getPresentVelocity(id);
 #endif
         float result = dxl.getPresentVelocity(id);
+        dxl.getLastStatusPacketError()
         DXL_DEBUG_PRINTF("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", id, result);
         return result;
     }
@@ -56,6 +57,16 @@ public:
         float result = dxl.getPresentCurrent(id);
         DXL_DEBUG_PRINTF("DXLMotor::getCurrentCurrent:: id[%d] = %f\n", id, result);
         return result;
+    }
+
+    inline bool isHardwareError(bool fromLastStatusPacket)
+    {
+        if (!fromLastStatusPacket)
+        {
+            getCurrentVelocity();
+        }
+        uint8_t errBit = dxl.getLastStatusPacketError();
+        return errBit>>7&1;
     }
 
     bool isOnline();

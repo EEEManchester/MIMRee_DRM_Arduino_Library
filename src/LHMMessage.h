@@ -57,7 +57,7 @@ class LHMMessage
 public:
     LHMMessage(LHMController &controller);
 
-    inline bool initiate(uint32_t mavCOMInterval)
+    inline bool initiate()
     {
         if (!mavlink.initiate(LHM_MAV_BAUDRATE))
         {

@@ -9,7 +9,7 @@ typedef struct DRMDataStore
     float velocity;
 } drm_datastore_t;
 
-#define PIN_CHIP_SELECT BOARD_SPI2_NSS_PIN
+#define PIN_CHIP_SELECT 2
 
 class CardWriter
 {
@@ -32,7 +32,7 @@ public:
     {
         dataFile.write((const uint8_t *)&datastore, sizeof(datastore));
         dataFile.flush();
-        Serial.println("New data!");
+        // Serial.println("New data!");
     }
 
 private:

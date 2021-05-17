@@ -39,7 +39,7 @@ class OLAMMessage
 public:
     OLAMMessage(OLAMController &controller);
 
-    inline bool initiate(uint32_t mavCOMInterval)
+    inline bool initiate()
     {
         if (!mavlink.initiate(OLAM_MAV_BAUDRATE))
         {

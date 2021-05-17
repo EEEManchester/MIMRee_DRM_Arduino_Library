@@ -46,6 +46,13 @@ public:
     inline int32_t goalPosition() { return _goalPosition; }
     inline int32_t accuracy() { return _accuracy; }
     inline bool started() { return _started; }
+    inline void reset()
+    {
+        _stageId = -1;
+        motor = nullptr;
+        _goalPosition = -1;
+        _accuracy = -1;
+    }
 
     void update(int8_t stageId, DXLMotor *motor, int32_t goalPosition, int32_t accuracy);
     MotionSequenceStageStatusType status();
@@ -68,6 +75,11 @@ public:
 
     inline MotionSequenceType sequenceType() { return _sequenceType; }
     inline int8_t currentStageId() { return currentStage.stageId(); }
+    inline void reset()
+    {
+        currentStage.reset();
+        _sequenceType = MS_SEQ_TYPE_UNKNOWN;
+    }
 
     MotionSequenceStatusType status();
     MotionSequenceExecusionResultType next();
