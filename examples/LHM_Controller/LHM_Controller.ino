@@ -7,7 +7,7 @@
 #include <cppQueue.h>
 
 #define LHM_VERSION "V1.0-20210512-2257"
-#define LHM_LOG_DIR "LHM"
+#define LHM_LOG_DIRECTORY "LHM"
 #define CPP_QUEUE_IMPLEMENTATION FIFO
 
 const uint32_t STATUS_REPORT_INTERVAL = 1000;
@@ -33,6 +33,7 @@ typedef struct Datastore
   bool engaged;
   uint8_t lastCommand;
   uint32_t lastCommandTime;
+  uint32_t lastCommandGCSTime;
 } lhm_datastore_t;
 
 typedef struct CommandACKData
@@ -43,7 +44,7 @@ typedef struct CommandACKData
   uint8_t prog;
 } command_ack_data_t;
 
-DataWriter logWriter(LHM_LOG_DIR);
+DataWriter logWriter(LHM_LOG_DIRECTORY);
 uint32_t timeSyncAdjustment = 0;
 lhm_datastore_t datastore;
 
@@ -61,6 +62,9 @@ lhm_hook_status_t hkStatus;
 uint32_t hookMotionStopDelay = 100;
 uint32_t hookMotionStartTime = 0;
 bool hingeInTransition = false;
+uint8_t lastCMD = LHM_CMD_ID_UNKNOWN;
+uint32_t lastCMDTime = 0;
+uint32_t lastCMDGCSTime = 0;
 
 void setup()
 {
@@ -132,7 +136,7 @@ void reportStatus()
   bool egStatus = lhmController.isEngaged();
   lhmMsg.sendStatusMessage(hgStatus, hkStatus, (uint8_t)egStatus);
   setStatusLEDs();
-  DEBUG_SERIAL.printf("【Status】Hinge=%d | Hook=%d | Engaged=%d\n", (unsigned)hgStatus, (unsigned)hkStatus, (unsigned)egStatus);
+  DEBUG_SERIAL.printf("【Status】Hinge=%d | Hook=%d | Engaged=%d | TC=%d\n", (unsigned)hgStatus, (unsigned)hkStatus, (unsigned)egStatus, millis()-prevStatusReportTime);
 }
 
 void checkCommandIn()
@@ -163,8 +167,6 @@ inline bool validateCommand(const MAVMessage &msg)
   return true;
 }
 
-uint8_t last_cmd = LHM_CMD_ID_UNKNOWN;
-uint32_t last_cmd_time = 0;
 void processCommand(const MAVMessage &msg)
 {
   bool result = false;
@@ -186,7 +188,7 @@ void processCommand(const MAVMessage &msg)
     break;
   case LHM_CMD_ID_HINGE_LANDING:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    if (last_cmd == cmd && millis() - last_cmd_time < 5000 && hingeInTransition)
+    if (lastCMD == cmd && millis() - lastCMDTime < 5000 && hingeInTransition)
     {
       break;
     }
@@ -230,8 +232,9 @@ void processCommand(const MAVMessage &msg)
   { //Force saving data log once after receiving a new command.
     logWriter.flush();
   }
-  last_cmd = cmd;
-  last_cmd_time = millis();
+  lastCMD = cmd;
+  lastCMDTime = sTime;
+  lastCMDGCSTime = msg.button_change.time_boot_ms;
   if (millis() - sTime < COMMAND_ACK_DELAY_TIMER)
   {
     command_ack_data_t data;
@@ -239,7 +242,7 @@ void processCommand(const MAVMessage &msg)
     data.cmd = cmd;
     data.result = result;
     data.prog = LHM_CMD_PROG_MISSION_STARTED;
-    cmdACKQueue.push(&data);
+    addToCommandACKQueue(data);
   }
   else
   {
@@ -374,7 +377,8 @@ void checkSDLoggerButton()
   LSButtonState btnSDState = lhmController.btnSD.getState();
   if (btnSDState == LSButtonState::LONG_PRESSED)
   {
-    logWriter.setup(LHM_LOG_FNAME);
+    logWriter.close();
+    lhmController.ledStat.blinkSync(5,50,50);
   }
 }
 
@@ -383,16 +387,39 @@ inline bool isTimeToLogData()
   return (int)millis() - prevDataLogTime > DATA_LOG_INTERVAL;
 }
 
+bool checkSDLoggerHealth()
+{
+  switch (logWriter.getStatus())
+  {
+  case WRITER_STATUS_OK:
+    return true;
+  case WRITER_STATUS_DISABLED:
+    return false;
+  case WRITER_STATUS_NO_FILE:
+    return logWriter.initialise();
+  case WRITER_STATUS_NO_CARD:
+    logWriter.resetFile();
+    return false;
+  default:
+    return false;
+  }
+}
+
 void logLHMData()
 {
-  if 
-  if (!logWriter.canWrite() || !isTimeToLogData())
+  if (!isTimeToLogData())
+  {
+    return;
+  }
+  if (!checkSDLoggerHealth())
   {
     return;
   }
   prevDataLogTime = millis();
   packDataToLog();
+  uint32_t timeAtPacked = millis();
   logWriter.logData((uint8_t *)&datastore, sizeof(datastore));
+  DEBUG_SERIAL.printf("【LOG】 TC_packing=%d, TC_write=%d\n", timeAtPacked - prevDataLogTime, millis()-timeAtPacked);
 }
 
 void packDataToLog()
@@ -409,8 +436,9 @@ void packDataToLog()
   datastore.hingeStatus = hgStatus;
   datastore.hookStatus = hkStatus;
   datastore.engaged = lhmController.isEngaged();
-  datastore.lastCommand = last_cmd;
-  datastore.lastCommandTime = last_cmd_time;
+  datastore.lastCommand = lastCMD;
+  datastore.lastCommandTime = lastCMDTime;
+  datastore.lastCommandGCSTime = lastCMDGCSTime;
   // Serial.printf("[DEBUG] Packing data takes %.3f milliseconds.\n", millis()-datastore.timestamp);
   // Serial.printf("PCur=%.3f,PPos=%.3f,PVel=%.3f,RCur=%.3f,RPos=%.3f,RVel=%.3f\n", datastore.servo_pitch_current, datastore.servo_pitch_position, datastore.servo_pitch_velocity, datastore.servo_roll_current, datastore.servo_roll_position, datastore.servo_roll_velocity);
 }

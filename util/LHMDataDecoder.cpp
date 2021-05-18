@@ -14,13 +14,16 @@ typedef struct Datastore
   uint8_t hingeStatus;
   uint8_t hookStatus;
   bool engaged;
+  uint8_t lastCommand;
+  uint32_t lastCommandTime;
+  uint32_t lastCommandGCSTime;
 } lhm_datastore_t;
 
 lhm_datastore_t dataline;
 
 void printDatastore(basic_ostream<char> &ios)
 {
-    ios << dataline.timestamp << ",";
+    ios << (unsigned)dataline.timestamp << ",";
     ios << dataline.servo_roll_current << ",";
     ios << dataline.servo_roll_position << ",";
     ios << dataline.servo_roll_velocity << ",";
@@ -29,7 +32,10 @@ void printDatastore(basic_ostream<char> &ios)
     ios << dataline.servo_pitch_velocity << ",";
     ios << (unsigned)dataline.hingeStatus << ",";
     ios << (unsigned)dataline.hookStatus << ",";
-    ios << (unsigned)dataline.engaged << endl;
+    ios << (unsigned)dataline.engaged << ",";
+    ios << (unsigned)dataline.lastCommand << ",";
+    ios << (unsigned)dataline.lastCommandTime << ",";
+    ios << (unsigned)dataline.lastCommandGCSTime << endl;
 }
 
 void createDecodeFile(string dataFileName, ofstream &fh)
@@ -46,12 +52,17 @@ void createDecodeFile(string dataFileName, ofstream &fh)
     cout << " created." << endl;
 }
 
-void decode(string dataFileName)
+void decode(string folder, string dataFileName)
 {
     uint32_t lineCount = 0;
     fstream dataFH;
     ofstream decodeFH;
-    dataFH.open(dataFileName, std::fstream::in | std::fstream::binary);
+    dataFH.open(folder + "\\" + dataFileName, std::fstream::in | std::fstream::binary);
+    if (!dataFH)
+    {
+        cout << "Error, file does not exist." << endl;
+        return;
+    }
     createDecodeFile(dataFileName, decodeFH);
 
     while (dataFH.read((char *)&dataline, sizeof(dataline)))
@@ -71,7 +82,7 @@ void decode(string dataFileName)
 
 int main()
 {
-
-    decode("0_0_17.BIN");
+    string folder = "F:\\LHM5";
+    decode(folder, "0_2_55.BIN");
     return 0;
 }

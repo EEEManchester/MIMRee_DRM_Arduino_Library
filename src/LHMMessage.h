@@ -46,7 +46,7 @@ struct MAVMessage
 
 struct MAVButtonChangeMessage : public MAVMessage
 {
-    inline MAVButtonChangeMessage(mavlink_button_change_t bc, bool accepted) : MAVMessage(MAVLINK_MSG_ID_BUTTON_CHANGE, accepted)
+    inline MAVButtonChangeMessage(mavlink_button_change_t &bc, bool accepted) : MAVMessage(MAVLINK_MSG_ID_BUTTON_CHANGE, accepted)
     {
         this-> button_change = bc;
     }

@@ -155,6 +155,10 @@ lhm_hook_status_t LHMController::getHookStatus()
     lhm_limit_switch_status_t bot_ls = getBotLimitSwitchStatus();
     LHM_DEBUG_PRINTF("LHMController::getHookStatus::top=[%d], bot=[%d]\n", top_ls, bot_ls);
 
+    if (top_ls == LHM_LS_STATUS_OFFLINE || bot_ls == LHM_LS_STATUS_OFFLINE || !hookMotor.isOnline())
+    {
+        return LHM_HOOK_STATUS_OFFLINE;
+    }
     if (top_ls == LHM_LS_STATUS_ERROR || bot_ls == LHM_LS_STATUS_ERROR)
         return LHM_HOOK_STATUS_ERROR;
     if (top_ls == LHM_LS_STATUS_CLOSED && bot_ls == LHM_LS_STATUS_OPEN)
@@ -172,10 +176,6 @@ lhm_hook_status_t LHMController::getHookStatus()
     if (top_ls == LHM_LS_STATUS_CLOSED && bot_ls == LHM_LS_STATUS_CLOSED)
     {
         return LHM_HOOK_STATUS_ERROR;
-    }
-    if (top_ls == LHM_LS_STATUS_OFFLINE || bot_ls == LHM_LS_STATUS_OFFLINE || !hookMotor.isOnline())
-    {
-        return LHM_HOOK_STATUS_OFFLINE;
     }
     if (hookMotor.isTorqueOn())
     {

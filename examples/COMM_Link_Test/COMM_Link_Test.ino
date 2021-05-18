@@ -44,7 +44,7 @@ void setup()
     if (millis() - lastMAVComInitiateTime > MAV_COM_INITIATE_INTERVAL)
     {
       bool result = lhmMsg.initiate(1);
-      lhmController.ledRed.syncBlink(2, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
+      lhmController.ledRed.blinkSync(2, FLASH_TIME_SHORT_EXTREME, FLASH_TIME_SHORT_EXTREME);
       lastMAVComInitiateTime = millis();
       if (result)
       {
@@ -166,8 +166,8 @@ inline bool validateCommand(MAVMessage &msg)
   return true;
 }
 
-uint8_t last_cmd = LHM_CMD_ID_UNKNOWN;
-uint32_t last_cmd_time = 0;
+uint8_t lastCMD = LHM_CMD_ID_UNKNOWN;
+uint32_t lastCMDTime = 0;
 TimeSeq ts;
 bool dequeueRes = false;
 void processCommand(MAVMessage &msg)
@@ -192,7 +192,7 @@ void processCommand(MAVMessage &msg)
     break;
   case LHM_CMD_ID_HINGE_LANDING:
     lhmMsg.sendCommandFeedback(cmd, LHM_CMD_RE_SUCCESSFUL, LHM_CMD_PROG_COMMAND_ACK);
-    if (last_cmd == cmd && millis()-last_cmd_time < 5000 && hingeInTransition)
+    if (lastCMD == cmd && millis()-lastCMDTime < 5000 && hingeInTransition)
     {
       break;
     }
@@ -249,8 +249,8 @@ void processCommand(MAVMessage &msg)
   {
     delay (20);
   }
-  last_cmd = cmd;
-  last_cmd_time = millis();
+  lastCMD = cmd;
+  lastCMDTime = millis();
   // DEBUG_SERIAL.printf("【CommandFeedback】 CMD_id = %d, result = %d\n", cmd, (int)result);
   if (CMD_ACK_RESULT_OVERRIDE == 1)
   {

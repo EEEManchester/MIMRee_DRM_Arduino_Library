@@ -172,7 +172,7 @@ public:
         ledFlashControllers.loop();
     }
 
-    inline void syncBlink(uint8_t times, uint16_t onTime, uint16_t offTime)
+    inline void blinkSync(uint8_t times, uint16_t onTime, uint16_t offTime)
     {
         uint8_t on = reverseOnOff ? (uint8_t)LED_ON_REVERSED : (uint8_t)LED_ON;
         uint8_t off = reverseOnOff ? (uint8_t)LED_OFF_REVERSED : (uint8_t)LED_OFF;

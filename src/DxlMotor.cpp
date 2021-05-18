@@ -19,8 +19,11 @@ bool DXLMotor::isOnline()
 {
     bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::ping, id);
     DXL_DEBUG_PRINTF("DXLMotor::isOnline:: id[%d][ping] = %d\n", id, result);
-    bool result2 = isTorqueOn();
-    return result || result2;
+    if (!result)
+    {
+        return false;
+    }
+    return isTorqueOn();
 }
 
 bool DXLMotor::isTorqueOn()
@@ -241,10 +244,12 @@ bool DXLMotor::repeatCOM(bool (Dynamixel2Arduino::*dxlFunc)(T), T arg)
 {
     int count = 0;
     bool result = ((dxl).*(dxlFunc))(arg);
+    // uint32_t ts = millis();
     while (!result && count < MAX_DXL_PROTOCOL_ATTEMPTS)
     {
         result = ((dxl).*(dxlFunc))(arg);
         count++;
+        // Serial.printf("%d, %d\n", count, millis()-ts);
     }
     return result;
 }
