@@ -24,7 +24,7 @@ LHMController::LHMController()
 bool LHMController::setup()
 {
     dxl.begin(DXL_BAUD_RATE);
-    if (dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION))
+    if (!dxl.setPortProtocolVersion(DXL_PROTOCOL_VERSION))
     {
         return false;
     }

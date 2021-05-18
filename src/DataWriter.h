@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #define PIN_CHIP_SELECT 2
-#define PIN_CARD_DETECTION -1
+#define PIN_CARD_DETECTION 0
 
 enum writer_status_t : uint8_t
 {

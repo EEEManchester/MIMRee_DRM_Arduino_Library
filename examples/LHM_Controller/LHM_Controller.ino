@@ -6,7 +6,7 @@
 #include <DataWriter.h>
 #include <cppQueue.h>
 
-#define LHM_VERSION "V1.0-20210518-1415"
+#define LHM_VERSION "V1.0-20210518-2017"
 #define LHM_LOG_DIRECTORY "LHM"
 #define CPP_QUEUE_IMPLEMENTATION FIFO
 
@@ -72,7 +72,11 @@ void setup()
   DEBUG_SERIAL.printf("Version: %s\n", LHM_VERSION);
   // waitDebugSerial();
 
-  lhmController.setup();
+  if (!lhmController.setup())
+  {
+    Serial.println("Fail to setup LHM. Retrying after 1s.");
+    delay(1000);
+  }
 
   while (!lhmMsg.initiate())
   {

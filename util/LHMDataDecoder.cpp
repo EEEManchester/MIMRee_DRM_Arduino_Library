@@ -82,7 +82,7 @@ void decode(string folder, string dataFileName)
 
 int main()
 {
-    string folder = "F:\\LHM5";
-    decode(folder, "0_2_55.BIN");
+    string folder = "F:\\LHM6";
+    decode(folder, "0_0_1.BIN");
     return 0;
 }
