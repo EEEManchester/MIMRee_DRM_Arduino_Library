@@ -6,7 +6,7 @@
 #include <DataWriter.h>
 #include <cppQueue.h>
 
-#define LHM_VERSION "V1.0-20210512-2257"
+#define LHM_VERSION "V1.0-20210518-1415"
 #define LHM_LOG_DIRECTORY "LHM"
 #define CPP_QUEUE_IMPLEMENTATION FIFO
 
