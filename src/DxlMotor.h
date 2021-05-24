@@ -7,11 +7,11 @@
 // #define DXL_DEBUG
 
 #ifdef DXL_DEBUG
-#ifndef DEBUG_SERIAL
-#define DEBUG_SERIAL Serial
-#endif
-#define DXL_DEBUG_PRINTF(fmt, ...) DEBUG_SERIAL.printf(fmt, ##__VA_ARGS__)
-#define DXL_DEBUG_PRINTLN(a) DEBUG_SERIAL.println(a)
+// #ifndef DEBUG_SERIAL
+// #define DEBUG_SERIAL Serial
+// #endif
+#define DXL_DEBUG_PRINTF(fmt, ...) Serial.printf(fmt, ##__VA_ARGS__)
+#define DXL_DEBUG_PRINTLN(a) Serial.println(a)
 #else
 #define DXL_DEBUG_PRINTF(fmt, ...)
 #define DXL_DEBUG_PRINTLN(a)
@@ -45,7 +45,7 @@ public:
         return dxl.getPresentVelocity(id);
 #endif
         float result = dxl.getPresentVelocity(id);
-        dxl.getLastStatusPacketError()
+        dxl.getLastStatusPacketError();
         DXL_DEBUG_PRINTF("DXLMotor::getCurrentVelocity:: id[%d] = %f\n", id, result);
         return result;
     }
@@ -63,10 +63,13 @@ public:
     {
         if (!fromLastStatusPacket)
         {
-            getCurrentVelocity();
+            dxl.ping();
         }
         uint8_t errBit = dxl.getLastStatusPacketError();
-        return errBit>>7&1;
+        DXL_DEBUG_PRINTF("DXLMotor::isHardwareError:: ErrorBit=%d", errBit);
+        bool result = errBit>>7&1;
+        DXL_DEBUG_PRINTF(" -> result=%d\n", result);
+        return result;
     }
 
     bool isOnline();

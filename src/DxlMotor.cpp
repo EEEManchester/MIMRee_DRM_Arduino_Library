@@ -19,11 +19,7 @@ bool DXLMotor::isOnline()
 {
     bool result = repeatCOM<uint8_t>(&Dynamixel2Arduino::ping, id);
     DXL_DEBUG_PRINTF("DXLMotor::isOnline:: id[%d][ping] = %d\n", id, result);
-    if (!result)
-    {
-        return false;
-    }
-    return isTorqueOn();
+    return result;
 }
 
 bool DXLMotor::isTorqueOn()

@@ -29,6 +29,8 @@ bool LHMController::setup()
         return false;
     }
 
+    DEBUG_SERIAL.println("DXL servos set.");
+    resetAllServos();
     pinMode(PIN_LIMIT_SWITCH_CLOSED_BOT, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_CLOSED_TOP, INPUT_PULLDOWN);
     pinMode(PIN_LIMIT_SWITCH_OPEN_BOT, INPUT_PULLDOWN);
@@ -50,6 +52,7 @@ bool LHMController::setup()
         servoMax = JETTISON_SERVO_VALUE_CLOSE;
     }
     jettisonServo.attach(PIN_JETTISON_SERVO_PWM, servoMin, servoMax);
+    DEBUG_SERIAL.println("LHM all set.");
     return true;
 }
 
@@ -62,7 +65,7 @@ bool LHMController::resetAllServos()
     result = result & hookMotor.setOperatingMode(OP_VELOCITY);
     result = result & stopHookMotor();
     result = result & stopHingeMotor();
-    DEBUG_SERIAL.println(result ? "LHMController::initiate: DXL servos initiated." : "LHMController::initiateDXL: Fail to initiated DXL servos.");
+    DEBUG_SERIAL.println(result ? "LHMController::resetAllServos: DXL servos reset." : "LHMController::resetAllServos: Fail to reset DXL servos.");
     return result;
 }
 
@@ -82,13 +85,15 @@ bool LHMController::resetHingeServoError()
 
 lhm_hinge_status_t LHMController::getHingeStatus()
 {
-    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorPitch -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorPitch [id=%d] -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+                     hingeMotorPitch.getId(),
                      (int)hingeMotorPitch.getLastSetOperatingMode(),
                      hingeMotorPitch.getLastSetGoalPosition(),
                      hingeMotorPitch.getLastSetGoalVelocity(),
                      hingeMotorPitch.getLastSetVelocityProfile(),
                      hingeMotorPitch.getLastSetAccelerationProfile());
-    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorRoll -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+    LHM_DEBUG_PRINTF("LHMController::getHingeStatus: hingeMotorRoll [id=%d] -> record: OP[%d] | Pos[%f] | Vel[%f] | VelProf[%d] | AccProf[%d]\n",
+                     hingeMotorRoll.getId(),
                      (int)hingeMotorRoll.getLastSetOperatingMode(),
                      hingeMotorRoll.getLastSetGoalPosition(),
                      hingeMotorRoll.getLastSetGoalVelocity(),
@@ -99,13 +104,9 @@ lhm_hinge_status_t LHMController::getHingeStatus()
     {
         return LHM_HINGE_STATUS_OFFLINE;
     }
-    if (hingeMotorPitch.isHardwareError(false))
+    if (hingeMotorPitch.isHardwareError(true) || hingeMotorRoll.isHardwareError(true))
     {
-        hingeMotorPitch.reboot();
-    }
-    if (hingeMotorRoll.isHardwareError(false))
-    {
-        hingeMotorRoll.reboot();
+        return LHM_HINGE_STATUS_SERVO_HARDWARE_ERROR;
     }
 
     bool torquePitch = hingeMotorPitch.isTorqueOn();
