@@ -21,6 +21,23 @@ typedef struct Datastore
 
 lhm_datastore_t dataline;
 
+void printHeader(basic_ostream<char> &ios)
+{
+    ios << "timestamp" << ",";
+    ios << "roll_cur" << ",";
+    ios << "roll_pos" << ",";
+    ios << "roll_vel" << ",";
+    ios << "pitch_cur" << ",";
+    ios << "pitch_pos" << ",";
+    ios << "pitch_vel" << ",";
+    ios << "hinge_stat" << ",";
+    ios << "hook_stat" << ",";
+    ios << "engaged" << ",";
+    ios << "last_cmd" << ",";
+    ios << "last_cmd_t" << ",";
+    ios << "last_cmd_gcs_t" << endl;
+}
+
 void printDatastore(basic_ostream<char> &ios)
 {
     ios << (unsigned)dataline.timestamp << ",";
@@ -65,6 +82,7 @@ void decode(string folder, string dataFileName)
     }
     createDecodeFile(dataFileName, decodeFH);
 
+    printHeader(decodeFH);
     while (dataFH.read((char *)&dataline, sizeof(dataline)))
     {
         printDatastore(decodeFH);
@@ -82,7 +100,7 @@ void decode(string folder, string dataFileName)
 
 int main()
 {
-    string folder = "F:\\LHM6";
-    decode(folder, "0_0_1.BIN");
+    string folder = "data_2021_05_19";
+    decode(folder, "manual_flight.BIN");
     return 0;
 }
